@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /market
+Allow: /campus
+Allow: /profile
+Disallow: /api/
+Disallow: /_next/
+Disallow: /create
+
+Sitemap: https://your-domain.com/sitemap.xml
