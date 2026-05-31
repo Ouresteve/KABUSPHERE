@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KABUSphere - Campus Social Network",
   description: "Connect with your campus community. Share, discover, and engage with students from Kabarak University.",
-  applicationName: "KABUSphere",
+  applicationName: "KABUSPHERE",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
