@@ -46,8 +46,12 @@ export const metadata: Metadata = {
     images: ["/images/logo.jpeg"],
   },
   icons: {
-    icon: "/images/logo.jpeg",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/images/logo.jpeg", sizes: "192x192", type: "image/jpeg" },
+    ],
     apple: "/images/logo.jpeg",
+    shortcut: "/favicon.ico",
   },
   manifest: "/manifest.json",
   viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover",
