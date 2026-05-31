@@ -5,10 +5,17 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { enforceEmailRestriction } from '@/lib/auth';
 
+
+
+
+export const dynamic = 'force-dynamic';
+
+
+
 export default function AuthCallback() {
   const router = useRouter();
   const [status, setStatus] = useState('Verifying your access...');
-
+  
   useEffect(() => {
     const handleCallback = async () => {
       try {
