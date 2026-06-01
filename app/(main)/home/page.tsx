@@ -632,7 +632,7 @@ export default function HomePage() {
                     onClick={() => {
                       const message = `Hi, I'm interested in this product: ${post.content.substring(0, 50)}...`;
                       const encodedMessage = encodeURIComponent(message);
-                      let phoneNumber = post.whatsapp_number;
+                      let phoneNumber = post.whatsapp_number!;
                       // Add country code if missing
                       if (!phoneNumber.startsWith('+') && !phoneNumber.startsWith('00')) {
                         phoneNumber = '+254' + phoneNumber;
