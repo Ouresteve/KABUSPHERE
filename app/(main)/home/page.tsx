@@ -248,7 +248,7 @@ export default function HomePage() {
 
     // Play sound effect
     try {
-     /* const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContextClass) return;
       
       const audioContext = new AudioContextClass();
@@ -266,8 +266,8 @@ export default function HomePage() {
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
       
       osc.start(now);
-      osc.stop(now + 0.15);*/
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      osc.stop(now + 0.15);
+     /* const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContextClass) return;
   
   const audioContext = new AudioContextClass();
@@ -295,7 +295,7 @@ export default function HomePage() {
   gain.gain.exponentialRampToValueAtTime(0.01, now + audioBuffer.duration);
   
   // 5. Start playback immediately
-  source.start(now);
+  source.start(now);*/
     } catch (err) {
       console.log('Audio not available:', err);
     }
