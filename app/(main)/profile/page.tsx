@@ -69,7 +69,37 @@ export default function ProfilePage() {
   }, [user]);
 
   if (loading) {
-    return <div className="p-8 text-center">Loading profile...</div>;
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] pb-20">
+        {/* Header Skeleton */}
+        <div className="bg-gradient-to-br from-[#001533] to-[#0047B3] px-6 pt-12 pb-8">
+          <div className="flex flex-col items-center">
+            <div className="w-28 h-28 bg-white/20 rounded-full mb-4 animate-pulse" />
+            <div className="h-8 bg-white/20 rounded w-48 mb-3 animate-pulse" />
+            <div className="h-4 bg-white/20 rounded w-64 animate-pulse" />
+          </div>
+        </div>
+
+        <div className="px-6 -mt-6">
+          <div className="bg-white rounded-3xl shadow p-6 space-y-6">
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i}>
+                  <div className="h-3 bg-gray-200 rounded w-24 mb-2 animate-pulse" />
+                  <div className="h-5 bg-gray-100 rounded w-40 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Actions Skeleton */}
+          <div className="mt-8 space-y-3">
+            <div className="h-14 bg-gray-200 rounded-2xl animate-pulse" />
+            <div className="h-14 bg-gray-200 rounded-2xl animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
