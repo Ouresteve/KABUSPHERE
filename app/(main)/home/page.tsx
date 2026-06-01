@@ -628,7 +628,15 @@ export default function HomePage() {
                   <Eye className="w-5 h-5" /> {post.views_count || 0}
                 </button>
                 {post.whatsapp_number && (
-                  <button className="bg-green-600 text-white px-5 py-2 rounded-2xl text-sm font-medium">
+                  <button 
+                    onClick={() => {
+                      const message = `Hi, I'm interested in this product: ${post.content.substring(0, 50)}...`;
+                      const encodedMessage = encodeURIComponent(message);
+                      const whatsappUrl = `https://wa.me/${post.whatsapp_number}?text=${encodedMessage}`;
+                      window.open(whatsappUrl, '_blank');
+                    }}
+                    className="bg-green-600 text-white px-5 py-2 rounded-2xl text-sm font-medium hover:bg-green-700 transition"
+                  >
                     Message
                   </button>
                 )}
