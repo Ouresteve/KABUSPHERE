@@ -59,7 +59,7 @@ export default function ServicesPage() {
 
           <h2 className="text-2xl font-bold text-[#001533]">Campus Services</h2>
           <p className="text-gray-600 mt-3 leading-relaxed">
-            All Products Delivery, Laundry Services, Water Refill Delivery and more are coming soon to KABUSphere
+            All Products Delivery, Laundry Services, Water Refill and Delivery and more are coming soon to KABUSphere
           </p>
 
           <button
