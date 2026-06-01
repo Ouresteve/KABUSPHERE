@@ -632,7 +632,12 @@ export default function HomePage() {
                     onClick={() => {
                       const message = `Hi, I'm interested in this product: ${post.content.substring(0, 50)}...`;
                       const encodedMessage = encodeURIComponent(message);
-                      const whatsappUrl = `https://wa.me/${post.whatsapp_number}?text=${encodedMessage}`;
+                      let phoneNumber = post.whatsapp_number;
+                      // Add country code if missing
+                      if (!phoneNumber.startsWith('+') && !phoneNumber.startsWith('00')) {
+                        phoneNumber = '+254' + phoneNumber;
+                      }
+                      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
                       window.open(whatsappUrl, '_blank');
                     }}
                     className="bg-green-600 text-white px-5 py-2 rounded-2xl text-sm font-medium hover:bg-green-700 transition"
