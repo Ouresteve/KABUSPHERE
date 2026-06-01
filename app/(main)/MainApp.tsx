@@ -19,13 +19,16 @@ import {
 
 export default function MainApp() {
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState<'home' | 'market' | 'campus' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'market' | 'campus' | 'profile' | 'services'>('home');
 
   // Update active tab based on URL
   useEffect(() => {
     if (pathname?.includes('/market')) setActiveTab('market');
     else if (pathname?.includes('/campus')) setActiveTab('campus');
+    else if (pathname?.includes('/services')) setActiveTab('services');
     else if (pathname?.includes('/profile')) setActiveTab('profile');
+    else if (pathname?.includes('/home')) setActiveTab('home');
+
     else if (pathname?.includes('/create')) return;
     else if (pathname?.includes('/onboarding')) return;
     else setActiveTab('home');
