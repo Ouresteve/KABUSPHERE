@@ -508,7 +508,7 @@ export default function HomePage() {
       {/* Filters */}
      {/* Filters */}
 <div className="px-4 py-4 flex gap-2 overflow-x-auto">
-  {['All', 'General', 'Market', 'Confessions','Your Posts'].map((filter) => (
+  {['All', 'Confessions', 'General', 'Market','Your Posts'].map((filter) => (
     <button
       key={filter}
       onClick={() => setActiveFilter(filter)}
