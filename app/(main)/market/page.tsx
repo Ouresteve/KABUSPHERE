@@ -46,7 +46,7 @@ export default function MarketPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
       <div className="sticky top-0 bg-white border-b z-40 px-4 py-4">
-        <h1 className="text-2xl font-bold text-[#001533]">KABU Market PLACE</h1>
+        <h1 className="text-2xl font-bold text-[#001533]">KABU Marketplace</h1>
       </div>
 
       <div className="p-4">
