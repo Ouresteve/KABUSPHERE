@@ -185,7 +185,7 @@ export default function CreatePostPage() {
          {/* Image Upload */}
         <div className="border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center hover:border-[#0047B3] transition cursor-pointer" onClick={() => document.getElementById('image-upload')?.click()}>
           <ImageIcon className="w-12 h-12 mx-auto text-gray-400" />
-          <p className="mt-3 font-medium">Add Photo</p>
+          <p className="mt-3 text-blue-500 font-bold">Add Photo</p>
           <input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
         </div>
 
