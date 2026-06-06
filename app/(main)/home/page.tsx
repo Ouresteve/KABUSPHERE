@@ -12,7 +12,7 @@ import {
 import {supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { subscribeToPushNotifications } from '@/lib/push-notifications';
-import { profile } from 'console';
+
 import { sendPushNotification } from '@/lib/send-notification';
 type post_views = {
   id: string;
@@ -381,6 +381,13 @@ export default function HomePage() {
         return;
       }
       
+       const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+
       if (data && data.length > 0) {
         // Add new comment to top of list
         setComments((prev) => ({
@@ -392,7 +399,7 @@ export default function HomePage() {
           await sendPushNotification(
             postOwner,
             "New Comment",
-            `${profile.full_name || 'Someone'} commented on your post!`,
+            `${profile?.full_name || 'Someone'} commented on your post!`,
             `/home`
           );
         }
