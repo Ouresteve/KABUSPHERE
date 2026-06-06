@@ -17,17 +17,19 @@ export const subscribeToPushNotifications = async (userId: string) => {
     // Save subscription to database
     const { error } = await supabase
       .from('push_subscriptions')
-      .upsert({
+      .upsert(
+        {
         user_id: userId,
         subscription: JSON.stringify(subscription),
-      });
+      },
+      { onConflict: 'user_id' });
 
     if (error) {
       console.error("Failed to save subscription:", error);
       return null;
     }
 
-    console.log("Push subscription saved successfully");
+    alert("Push subscription saved successfully");
     return subscription;
   } catch (error) {
     console.error("Failed to subscribe to push notifications:", error);
