@@ -470,9 +470,7 @@ export default function HomePage() {
   <Bell className="w-4 h-4" />
   <span>Subscribe</span>
 </button>
-          <button className="p-2 hover:bg-gray-100 rounded-xl">
-            <Search className="w-5 h-5 text-gray-600" />
-          </button>
+          
           
         </div>
       </div>
