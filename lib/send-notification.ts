@@ -7,21 +7,34 @@ export const sendPushNotification = async (
   body: string,
   url: string = '/home'
 ) => {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('push_subscriptions')
     .select('subscription')
     .eq('user_id', userId)
     .single();
 
-  if (!data) return;
+
+ if(error || !data?.subscription) {
+    console.log("No subscription found for user:", userId);
+    return;
+ }
+
+  
 
   try {
-    await fetch('/api/send-push', {
+    const res = await fetch('/api/send-push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: data.subscription, title, body, url })
+      body: JSON.stringify({
+        subscription: data.subscription,
+        title,
+        body,
+        url
+      })
     });
+
+    console.log("Push API response:", await res.text());
   } catch (e) {
-    console.error(e);
+    console.error("Failed to send push:", e);
   }
 };
