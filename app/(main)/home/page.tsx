@@ -460,7 +460,10 @@ export default function HomePage() {
           </div>
           {/*subscribeToPushNotifications*/}
           <button
-  onClick={subscribeToPushNotifications}
+  onClick={async () => {
+    if (!user) return;
+    await subscribeToPushNotifications(user.id);
+  }}
   className="bg-[#0047B3] text-white px-4 py-2 rounded-2xl text-sm"
 >
   Enable Notifications
