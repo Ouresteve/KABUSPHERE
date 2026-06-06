@@ -1,8 +1,14 @@
 import { supabase } from '@/lib/supabase';
 
-export const subscribeToPushNotifications = async (userId: string) => {
+// Type for the callback to use toast
+type ToastCallback = (message: string, type: 'success' | 'error' | 'info' | 'warning') => void;
+
+export const subscribeToPushNotifications = async (userId: string, onToast?: ToastCallback) => {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     console.warn("Push notifications not supported on this device");
+    if (onToast) {
+      onToast("Push notifications not supported on this device", 'warning');
+    }
     return null;
   }
 
@@ -26,13 +32,21 @@ export const subscribeToPushNotifications = async (userId: string) => {
 
     if (error) {
       console.error("Failed to save subscription:", error);
+      if (onToast) {
+        onToast("Failed to save subscription. Please try again.", 'error');
+      }
       return null;
     }
 
-    alert("Push subscription saved successfully");
+    if (onToast) {
+      onToast("Push notifications enabled successfully", 'success');
+    }
     return subscription;
   } catch (error) {
     console.error("Failed to subscribe to push notifications:", error);
+    if (onToast) {
+      onToast("Failed to enable push notifications. Please try again.", 'error');
+    }
     return null;
   }
 };

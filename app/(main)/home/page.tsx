@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/lib/toast-context';
 
 import { 
   Home, Users, Store, Bell, User, Plus, Search, Heart, 
@@ -48,6 +49,7 @@ type Post = {
 export default function HomePage() {
   const router = useRouter();
   const { user,loading: authLoading } = useAuth();
+  const { addToast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
   const [postViews, setPostViews] = useState<post_views[]>([]);
   const [loading, setLoading] = useState(true);
@@ -325,10 +327,11 @@ export default function HomePage() {
       .eq('id', postId);
 
     if (error) {
-      alert('Failed to delete post: ' + error.message);
+      addToast('Failed to delete post: ' + error.message, 'error');
     } else {
       setPosts((prevPosts) => prevPosts.filter((p) => p.id !== postId));
       setOpenMenuPostId(null);
+      addToast('Post deleted successfully', 'success');
     }
   };
 
@@ -371,7 +374,7 @@ export default function HomePage() {
 
       if (error) {
         console.error('Comment error:', error);
-        alert('Failed to post comment: ' + error.message);
+        addToast('Failed to post comment: ' + error.message, 'error');
         return;
       }
 
@@ -401,9 +404,11 @@ export default function HomePage() {
         }
 
         setCommentInput('');
+        addToast('Comment posted successfully', 'success');
       }
     } catch (err) {
       console.error('Exception posting comment:', err);
+      addToast('Failed to post comment. Please try again.', 'error');
     }
   };
 
@@ -462,7 +467,7 @@ export default function HomePage() {
           <button
   onClick={async () => {
     if (!user) return;
-    await subscribeToPushNotifications(user.id);
+    await subscribeToPushNotifications(user.id, addToast);
   }}
   className="bg-[#0047B3] text-white px-4 py-2 rounded-2xl text-sm flex items-center gap-2 hover:bg-[#003B99] transition"
   title="Subscribe to push notifications"

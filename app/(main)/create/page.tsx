@@ -5,10 +5,12 @@ import { ArrowLeft, Image as ImageIcon, Send, X, Users, Store,MessageCircle } fr
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/lib/toast-context';
 
 export default function CreatePostPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { addToast } = useToast();
 
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState<'general' | 'market' | 'confession'>('general');
@@ -98,9 +100,9 @@ export default function CreatePostPage() {
     });
 
     if (error) {
-      alert("Failed to create post: " + error.message);
+      addToast("Failed to create post: " + error.message, 'error');
     } else {
-      alert("Post created successfully!");
+      addToast("Post created successfully!", 'success');
       router.push('/home');
     }
 
