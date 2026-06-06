@@ -1,32 +1,27 @@
+// lib/send-notification.ts
 import { supabase } from './supabase';
 
 export const sendPushNotification = async (
-  userId: string, 
-  title: string, 
+  userId: string,
+  title: string,
   body: string,
   url: string = '/home'
 ) => {
-  const { data: subscriptions } = await supabase
+  const { data } = await supabase
     .from('push_subscriptions')
     .select('subscription')
     .eq('user_id', userId)
-    
-  if (!subscriptions || subscriptions.length === 0) return;
+    .single();
 
-  const subscription = subscriptions[0].subscription;
+  if (!data) return;
 
   try {
     await fetch('/api/send-push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subscription,
-        title,
-        body,
-        url
-      })
+      body: JSON.stringify({ subscription: data.subscription, title, body, url })
     });
-  } catch (error) {
-    console.error('Failed to send push:', error);
+  } catch (e) {
+    console.error(e);
   }
 };
