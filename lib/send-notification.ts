@@ -33,7 +33,7 @@ export const sendPushNotification = async (
       })
     });
 
-    console.log("Push API response:", await res.text());
+    console.log("Push API response:", await res.status);
   } catch (e) {
     console.error("Failed to send push:", e);
   }
