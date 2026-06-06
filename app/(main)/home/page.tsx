@@ -464,9 +464,11 @@ export default function HomePage() {
     if (!user) return;
     await subscribeToPushNotifications(user.id);
   }}
-  className="bg-[#0047B3] text-white px-4 py-2 rounded-2xl text-sm"
+  className="bg-[#0047B3] text-white px-4 py-2 rounded-2xl text-sm flex items-center gap-2 hover:bg-[#003B99] transition"
+  title="Subscribe to push notifications"
 >
-  Enable Notifications
+  <Bell className="w-4 h-4" />
+  <span>Subscribe</span>
 </button>
           <button className="p-2 hover:bg-gray-100 rounded-xl">
             <Search className="w-5 h-5 text-gray-600" />
