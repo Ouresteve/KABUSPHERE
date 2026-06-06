@@ -21,6 +21,19 @@ export default function MainApp() {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<'home' | 'market' | 'campus' | 'profile' | 'services'>('home');
 
+    // Register Service Worker for PWA + Push Notifications
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((registration) => {
+          console.log('Service Worker registered successfully');
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
+    }
+  }, []);
   // Update active tab based on URL
   useEffect(() => {
     if (pathname?.includes('/market')) setActiveTab('market');

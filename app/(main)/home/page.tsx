@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import {supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import { subscribeToPushNotifications } from '@/lib/push-notifications';
 type post_views = {
   id: string;
   user_id: string;
@@ -457,6 +458,13 @@ export default function HomePage() {
               KABU<span className="text-[#0047B3]">SPHERE</span>
             </h1>
           </div>
+          {/*subscribeToPushNotifications*/}
+          <button
+  onClick={subscribeToPushNotifications}
+  className="bg-[#0047B3] text-white px-4 py-2 rounded-2xl text-sm"
+>
+  Enable Notifications
+</button>
           <button className="p-2 hover:bg-gray-100 rounded-xl">
             <Search className="w-5 h-5 text-gray-600" />
           </button>
