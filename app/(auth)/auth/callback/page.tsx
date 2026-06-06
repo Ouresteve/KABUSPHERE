@@ -37,7 +37,7 @@ export default function AuthCallback() {
           setStatus('success');
           setMessage('Access verified successfully!');
           setTimeout(() => {
-            router.push('/onboarding');
+            router.push('/profile');
           }, 2000);
         }
       } catch (error) {

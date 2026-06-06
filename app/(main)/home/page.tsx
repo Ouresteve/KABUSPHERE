@@ -12,6 +12,8 @@ import {
 import {supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { subscribeToPushNotifications } from '@/lib/push-notifications';
+import { profile } from 'console';
+import { sendPushNotification } from '@/lib/send-notification';
 type post_views = {
   id: string;
   user_id: string;
@@ -58,6 +60,7 @@ export default function HomePage() {
   const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null);
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [selectedPostOwner, setSelectedPostOwner] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const [commentInput, setCommentInput] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
@@ -355,7 +358,7 @@ export default function HomePage() {
     setLoadingComments(false);
   };
 
-  const handleAddComment = async (postId: string) => {
+  const handleAddComment = async (postId: string, postOwner: string) => {
     if (!user || !commentInput.trim()) return;
 
     try {
@@ -377,13 +380,22 @@ export default function HomePage() {
         addToast('Failed to post comment: ' + error.message, 'error');
         return;
       }
-
+      
       if (data && data.length > 0) {
         // Add new comment to top of list
         setComments((prev) => ({
           ...prev,
           [postId]: [data[0], ...(prev[postId] || [])],
         }));
+
+        if(postOwner !== user.id) {
+          await sendPushNotification(
+            postOwner,
+            "New Comment",
+            `${profile.full_name || 'Someone'} commented on your post!`,
+            `/home`
+          );
+        }
         
         // Update comments count in local state
         setPosts((prevPosts) =>
@@ -632,6 +644,7 @@ export default function HomePage() {
                 <button 
                   onClick={() => {
                     setSelectedPostId(post.id);
+                    setSelectedPostOwner(post.user_id);
                     if (!comments[post.id]) {
                       fetchComments(post.id);
                     }
@@ -764,14 +777,14 @@ export default function HomePage() {
                   onChange={(e) => setCommentInput(e.target.value)}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && commentInput.trim()) {
-                      handleAddComment(selectedPostId);
+                      handleAddComment(selectedPostId, selectedPostOwner!);
                     }
                   }}
                   placeholder="Write a comment..."
                   className="flex-1 bg-gray-100 rounded-full px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#0047B3] transition"
                 />
                 <button
-                  onClick={() => handleAddComment(selectedPostId)}
+                  onClick={() => handleAddComment(selectedPostId, selectedPostOwner!)}
                   disabled={!commentInput.trim()}
                   className="bg-[#0047B3] text-white px-6 py-3 rounded-full font-medium hover:bg-[#003B99] disabled:opacity-30 disabled:cursor-not-allowed transition"
                 >

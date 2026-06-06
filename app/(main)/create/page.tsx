@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/lib/toast-context';
+import { sendPushNotification } from '@/lib/send-notification';
 
 export default function CreatePostPage() {
   const { user, loading: authLoading } = useAuth();
@@ -102,6 +103,20 @@ export default function CreatePostPage() {
     if (error) {
       addToast("Failed to create post: " + error.message, 'error');
     } else {
+      
+      const {data: allUsers} = await supabase
+      .from('profiles')
+      .select('id')
+      .neq('id', user?.id);
+
+      allUsers?.forEach(async (u) => {
+        await sendPushNotification(
+          u.id,
+          "New Post",
+          `${postType === 'confession' ? 'Anonymous' : profile.full_name || 'Someone'} just posted in ${postType === 'general' ? 'General' : postType === 'market' ? 'Market' : 'Confessions'} feed!`,
+          '/home'
+        );
+      });
       addToast("Post created successfully!", 'success');
       router.push('/home');
     }
