@@ -20,7 +20,6 @@ export default function ListProductPage() {
   const [category, setCategory] = useState(categories[0]);
   const [condition, setCondition] = useState(conditions[0]);
   const [location, setLocation] = useState('');
-  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [images, setImages] = useState<SelectedImage[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -56,7 +55,8 @@ export default function ListProductPage() {
     setError('');
 
     try {
-      await supabase.from('profiles').update({ whatsapp_number: whatsappNumber.trim() }).eq('id', user.id);
+      const { data: sellerProfile } = await supabase.from('profiles').select('whatsapp_number').eq('id', user.id).single();
+      if (!sellerProfile?.whatsapp_number) throw new Error('Add a WhatsApp number to your profile before listing an item.');
       const { data: product, error: productError } = await supabase.from('products').insert({
         seller_id: user.id,
         title: title.trim(),
@@ -119,7 +119,6 @@ export default function ListProductPage() {
               <select value={category} onChange={(event) => setCategory(event.target.value)} className="w-full rounded-xl border border-gray-200 bg-white p-4 text-black">{categories.map((item) => <option key={item}>{item}</option>)}</select>
               <select value={condition} onChange={(event) => setCondition(event.target.value)} className="w-full rounded-xl border border-gray-200 bg-white p-4 text-black">{conditions.map((item) => <option key={item}>{item}</option>)}</select>
             </div>
-            <input required value={whatsappNumber} onChange={(event) => setWhatsappNumber(event.target.value)} placeholder="Your WhatsApp number" className="w-full rounded-xl border border-gray-200 p-4 text-black outline-none focus:border-[#0047B3]" />
           </div>
         </div>
         <div className="rounded-2xl bg-white p-5 shadow-sm lg:p-8">

@@ -15,6 +15,7 @@ interface  Profile {
     course: string;
     year: string;
     hostel_address: string;
+    whatsapp_number?: string | null;
     avatar_url?: string | null;
     created_at?: string;
 }
@@ -140,6 +141,11 @@ export default function ProfilePage() {
           <div>
             <label className="text-black font-bold  block mb-1">Year of Study</label>
             <p className="font-medium text-[#0047B3]">{profile?.year || 'Not set yet'}</p>
+          </div>
+
+          <div>
+            <label className="text-black font-bold block mb-1">WhatsApp Number</label>
+            <p className="font-medium text-[#0047B3]">{profile?.whatsapp_number || 'Not set yet'}</p>
           </div>
         </div>
 

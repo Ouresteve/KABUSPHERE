@@ -13,6 +13,7 @@ export default function OnboardingPage() {
   const [fullName, setFullName] = useState('');
   const [course, setCourse] = useState('');
   const [year, setYear] = useState('Year 1');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [pageLoading, setPageLoading] = useState(true);
@@ -31,11 +32,12 @@ export default function OnboardingPage() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('full_name, whatsapp_number')
         .eq('id', user.id)
         .single();
 
       setPageLoading(false);
+      setWhatsappNumber(data?.whatsapp_number || '');
     };
 
     if (!authLoading) {
@@ -73,6 +75,7 @@ export default function OnboardingPage() {
         avatar_url: avatarUrl,
         course: course,
         year: year,
+        whatsapp_number: whatsappNumber.trim() || null,
       });
 
     setLoading(false);
@@ -181,6 +184,18 @@ export default function OnboardingPage() {
               <option>Year 3</option>
               <option>Year 4</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#001533] mb-2">WhatsApp Number</label>
+            <input
+              type="tel"
+              value={whatsappNumber}
+              onChange={e => setWhatsappNumber(e.target.value)}
+              placeholder="e.g. 0712345678"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#0047B3] transition text-black"
+            />
+            <p className="mt-2 text-xs text-gray-500">Used by buyers when they contact you about a listing.</p>
           </div>
 
           {error && (
