@@ -115,7 +115,7 @@ export default function MarketPage() {
             {!user && <button onClick={() => window.location.href = '/login'} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-[#0047B3] hover:bg-blue-50">Sign in</button>}
             <button
               onClick={() => user ? window.location.href = '/market/list' : window.location.href = '/login'}
-              className="flex items-center gap-2 rounded-xl bg-[#0047B3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#003B99]"
+              className="hidden items-center gap-2 rounded-xl bg-[#0047B3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#003B99] lg:flex"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">List an item</span>
@@ -161,7 +161,7 @@ export default function MarketPage() {
         {error ? (
           <div className="mt-6 rounded-2xl bg-red-50 p-6 text-center text-red-700">{error}</div>
         ) : loading ? (
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {[1, 2, 3].map((item) => <div key={item} className="h-96 animate-pulse rounded-2xl bg-white" />)}
           </div>
         ) : visibleProducts.length === 0 ? (
@@ -186,18 +186,18 @@ export default function MarketPage() {
                     </button>
                     <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-700">{product.condition}</span>
                   </div>
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <button type="button" onClick={() => setSelectedProduct(product)} className="line-clamp-2 text-left font-semibold text-[#001533] hover:text-[#0047B3]">{product.title}</button>
-                      <p className="shrink-0 font-bold text-[#0047B3]">KSh {Number(product.price).toLocaleString()}</p>
+                  <div className="p-3 sm:p-5">
+                    <div className="block sm:flex sm:items-start sm:justify-between sm:gap-3">
+                      <button type="button" onClick={() => setSelectedProduct(product)} className="line-clamp-2 text-left text-sm font-semibold text-[#001533] hover:text-[#0047B3] sm:text-base">{product.title}</button>
+                      <p className="mt-1 shrink-0 text-sm font-bold text-[#0047B3] sm:mt-0 sm:text-base">KSh {Number(product.price).toLocaleString()}</p>
                     </div>
-                    <button type="button" onClick={() => setSelectedProduct(product)} className="mt-2 line-clamp-2 text-left text-sm leading-relaxed text-gray-500">{product.description}</button>
-                    <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
+                    <button type="button" onClick={() => setSelectedProduct(product)} className="mt-2 line-clamp-2 text-left text-xs leading-relaxed text-gray-500 sm:text-sm">{product.description}</button>
+                    <div className="mt-3 flex min-w-0 items-center gap-1.5 text-[10px] text-gray-500 sm:mt-4 sm:gap-2 sm:text-xs">
                       {product.profiles?.avatar_url ? <img src={product.profiles.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" /> : <User className="h-5 w-5" />}
-                      <span>{product.profiles?.full_name || 'Kabarak seller'}</span>
+                      <span className="truncate">{product.profiles?.full_name || 'Kabarak seller'}</span>
                       {product.location && <span className="truncate">• {product.location}</span>}
                     </div>
-                    <a href={whatsappUrl || '#'} onClick={(event) => { if (!whatsappUrl) { event.preventDefault(); } }} target="_blank" rel="noreferrer" className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition ${whatsappUrl ? 'bg-[#16A34A] text-white hover:bg-[#15803D]' : 'cursor-not-allowed bg-gray-100 text-gray-400'}`}>
+                    <a href={whatsappUrl || '#'} onClick={(event) => { if (!whatsappUrl) { event.preventDefault(); } }} target="_blank" rel="noreferrer" className={`mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-[11px] font-semibold transition sm:mt-5 sm:gap-2 sm:py-3 sm:text-sm ${whatsappUrl ? 'bg-[#16A34A] text-white hover:bg-[#15803D]' : 'cursor-not-allowed bg-gray-100 text-gray-400'}`}>
                       <MessageCircle className="h-4 w-4" />
                       {whatsappUrl ? 'Buy on WhatsApp' : 'Seller contact unavailable'}
                     </a>
