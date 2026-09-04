@@ -29,6 +29,7 @@ export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -98,6 +99,8 @@ export default function MarketPage() {
     const searchText = `${product.title} ${product.description} ${product.category}`.toLowerCase();
     return matchesCategory && searchText.includes(query.toLowerCase());
   });
+
+  const productImages = selectedProduct?.product_images?.slice().sort((a, b) => a.display_order - b.display_order) || [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
@@ -169,12 +172,14 @@ export default function MarketPage() {
         ) : (
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {visibleProducts.map((product) => {
-              const image = product.product_images?.sort((a, b) => a.display_order - b.display_order)[0]?.image_url;
+              const image = product.product_images?.slice().sort((a, b) => a.display_order - b.display_order)[0]?.image_url;
               const whatsappUrl = getWhatsAppUrl(product);
               return (
                 <article key={product.id} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md">
                   <div className="relative aspect-[4/3] bg-gray-100">
-                    {image ? <img src={image} alt={product.title} className="h-full w-full object-cover" /> : <Store className="absolute inset-0 m-auto h-12 w-12 text-gray-300" />}
+                    <button type="button" onClick={() => setSelectedProduct(product)} className="block h-full w-full text-left">
+                      {image ? <img src={image} alt={product.title} className="h-full w-full object-cover" /> : <Store className="absolute inset-0 m-auto h-12 w-12 text-gray-300" />}
+                    </button>
                     <button onClick={() => toggleFavorite(product.id)} className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-sm" aria-label="Save listing">
                       <Heart className={`h-5 w-5 ${favorites.has(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
                     </button>
@@ -182,10 +187,10 @@ export default function MarketPage() {
                   </div>
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-3">
-                      <h3 className="line-clamp-2 font-semibold text-[#001533]">{product.title}</h3>
+                      <button type="button" onClick={() => setSelectedProduct(product)} className="line-clamp-2 text-left font-semibold text-[#001533] hover:text-[#0047B3]">{product.title}</button>
                       <p className="shrink-0 font-bold text-[#0047B3]">KSh {Number(product.price).toLocaleString()}</p>
                     </div>
-                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-gray-500">{product.description}</p>
+                    <button type="button" onClick={() => setSelectedProduct(product)} className="mt-2 line-clamp-2 text-left text-sm leading-relaxed text-gray-500">{product.description}</button>
                     <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
                       {product.profiles?.avatar_url ? <img src={product.profiles.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" /> : <User className="h-5 w-5" />}
                       <span>{product.profiles?.full_name || 'Kabarak seller'}</span>
@@ -202,6 +207,32 @@ export default function MarketPage() {
           </div>
         )}
       </main>
+
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#001533]/70 p-4 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+          <section role="dialog" aria-modal="true" aria-labelledby="product-detail-title" className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b px-5 py-4 lg:px-8">
+              <p className="text-sm font-semibold uppercase tracking-wider text-[#0047B3]">Product details</p>
+              <button type="button" onClick={() => setSelectedProduct(null)} className="rounded-full p-2 text-gray-500 hover:bg-gray-100" aria-label="Close product details"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="grid gap-6 p-5 lg:grid-cols-[1.05fr_0.95fr] lg:p-8">
+              <div>
+                <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100">
+                  {productImages[0] ? <img src={productImages[0].image_url} alt={selectedProduct.title} className="h-full w-full object-contain" /> : <Store className="mx-auto mt-24 h-14 w-14 text-gray-300" />}
+                </div>
+                {productImages.length > 1 && <div className="mt-3 grid grid-cols-3 gap-3">{productImages.map((image) => <div key={image.display_order} className="aspect-square overflow-hidden rounded-xl bg-gray-100"><img src={image.image_url} alt={`${selectedProduct.title} image ${image.display_order}`} className="h-full w-full object-cover" /></div>)}</div>}
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-start justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-wider text-[#0047B3]">{selectedProduct.category}</p><h2 id="product-detail-title" className="mt-2 text-2xl font-bold text-[#001533] lg:text-3xl">{selectedProduct.title}</h2></div><p className="shrink-0 text-xl font-bold text-[#0047B3]">KSh {Number(selectedProduct.price).toLocaleString()}</p></div>
+                <div className="mt-5 flex flex-wrap gap-2"><span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">{selectedProduct.condition}</span>{selectedProduct.location && <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">{selectedProduct.location}</span>}</div>
+                <p className="mt-6 whitespace-pre-wrap leading-relaxed text-gray-600">{selectedProduct.description}</p>
+                <div className="mt-6 flex items-center gap-3 border-t pt-5 text-sm text-gray-600">{selectedProduct.profiles?.avatar_url ? <img src={selectedProduct.profiles.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" /> : <User className="h-8 w-8" />}<span>Listed by <strong className="text-[#001533]">{selectedProduct.profiles?.full_name || 'Kabarak seller'}</strong></span></div>
+                {getWhatsAppUrl(selectedProduct) ? <a href={getWhatsAppUrl(selectedProduct) || '#'} target="_blank" rel="noreferrer" className="mt-auto flex items-center justify-center gap-2 rounded-xl bg-[#16A34A] py-3.5 font-semibold text-white hover:bg-[#15803D]"><MessageCircle className="h-5 w-5" /> Buy on WhatsApp</a> : <p className="mt-auto rounded-xl bg-gray-100 py-3.5 text-center text-sm text-gray-400">Seller contact unavailable</p>}
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
