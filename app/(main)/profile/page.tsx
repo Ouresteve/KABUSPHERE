@@ -3,10 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
-import { 
-  Home, Users, Store, Bell, User, 
-  Plus, Search, Heart, MessageCircle , LogOut, Edit3
-} from 'lucide-react';
+import { User, LogOut, Edit3 } from 'lucide-react';
 
 //import { User, LogOut, Edit3 } from 'lucide-react';
 import {useRouter} from 'next/navigation';
@@ -22,7 +19,6 @@ interface  Profile {
     created_at?: string;
 }
 export default function ProfilePage() {
-    const [activeTab, setActiveTab] = useState('profile');
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -166,26 +162,6 @@ export default function ProfilePage() {
         </div>
       </div>
      
-      {/*navigation*/}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t py-2 px-4 z-50">
-        <div className="flex justify-around items-center max-w-md mx-auto">
-          {[
-            { icon: Home, label: 'Home', tab: 'feed' },
-            { icon: Store, label: 'Market', tab: 'market' },
-            { icon: Users, label: 'Campus', tab: 'campus' },
-            { icon: User, label: 'Profile', tab: 'profile' },
-          ].map((item) => (
-            <button
-              key={item.tab}
-              onClick={() => setActiveTab(item.tab)}
-              className={`flex flex-col items-center py-1 px-4 transition ${activeTab === item.tab ? 'text-[#0047B3]' : 'text-gray-500'}`}
-            >
-              <item.icon className="w-6 h-6" />
-              <span className="text-[10px] mt-1 font-medium">{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

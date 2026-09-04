@@ -13,8 +13,7 @@ import ServicesPage from './services/page';
 
 
 import { 
-  Home, Users, Store, Bell, User, Plus, Search, Heart, 
-  MessageCircle, Share2, Eye
+  Home, Users, Store, User
 } from 'lucide-react';
 
 export default function MainApp() {
@@ -67,11 +66,44 @@ export default function MainApp() {
 
   return (
     <>
-      {renderPage()}
+      <div className={!pathname.includes('/create') && !pathname.includes('/onboarding') ? 'lg:pl-64' : ''}>
+        {renderPage()}
+      </div>
+
+      {/* Desktop Navigation */}
+      {!pathname.includes('/create') && !pathname.includes('/onboarding') && (
+        <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-gray-200 bg-white lg:block">
+          <div className="flex h-full flex-col px-5 py-8">
+            <div className="mb-10 px-3">
+              <p className="text-xl font-bold tracking-tight text-[#001533]">
+                KABU<span className="text-[#0047B3]">SPHERE</span>
+              </p>
+              <p className="mt-1 text-xs text-gray-500">Campus community</p>
+            </div>
+            <nav className="space-y-2" aria-label="Main navigation">
+              {[
+                { icon: Home, label: 'Home', tab: 'home' },
+                { icon: Store, label: 'Market', tab: 'market' },
+                { icon: Users, label: 'Services', tab: 'services' },
+                { icon: User, label: 'Profile', tab: 'profile' },
+              ].map((item) => (
+                <button
+                  key={item.tab}
+                  onClick={() => window.location.href = `/${item.tab}`}
+                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${activeTab === item.tab ? 'bg-blue-50 font-semibold text-[#0047B3]' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </aside>
+      )}
 
       {/* Bottom Navigation - Hide on Create Post Page */}
-      {!pathname.includes('/create') && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t py-2 px-4 z-50">
+      {!pathname.includes('/create') && !pathname.includes('/onboarding') && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white px-4 py-2 lg:hidden">
           <div className="flex justify-around items-center max-w-md mx-auto">
             {[
               { icon: Home, label: 'Home', tab: 'home' },
