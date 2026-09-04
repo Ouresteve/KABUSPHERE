@@ -171,7 +171,7 @@ export default function MarketPage() {
             <p className="mt-2 text-gray-500">Try another search or be the first to list something.</p>
           </div>
         ) : (
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {visibleProducts.map((product) => {
               const image = product.product_images?.slice().sort((a, b) => a.display_order - b.display_order)[0]?.image_url;
               const whatsappUrl = getWhatsAppUrl(product);
