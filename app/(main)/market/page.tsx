@@ -14,7 +14,8 @@ type Product = {
   category: string;
   condition: string;
   location: string | null;
-  profiles?: { full_name?: string; avatar_url?: string | null; whatsapp_number?: string | null } | null;
+  seller_whatsapp_number?: string | null;
+  profiles?: { full_name?: string; avatar_url?: string | null } | null;
   product_images?: { image_url: string; display_order: number }[];
 };
 
@@ -37,7 +38,7 @@ export default function MarketPage() {
       setError(null);
       const { data, error: productsError } = await supabase
         .from('products')
-        .select('*, profiles(full_name, avatar_url, whatsapp_number), product_images(image_url, display_order)')
+        .select('*, profiles(full_name, avatar_url), product_images(image_url, display_order)')
         .eq('status', 'Active')
         .order('created_at', { ascending: false });
 
@@ -86,7 +87,7 @@ export default function MarketPage() {
   };
 
   const getWhatsAppUrl = (product: Product) => {
-    const sellerNumber = product.profiles?.whatsapp_number;
+    const sellerNumber = product.seller_whatsapp_number;
     if (!sellerNumber) return null;
     const digits = sellerNumber.replace(/\D/g, '');
     const phone = digits.startsWith('254') ? digits : digits.replace(/^0/, '254');
