@@ -105,8 +105,8 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#001533] to-[#0047B3] px-6 pt-12 pb-8 text-white">
-        <div className="flex flex-col items-center">
+      <div className="bg-gradient-to-br from-[#001533] to-[#0047B3] px-6 pb-8 pt-12 text-white lg:pb-12">
+        <div className="mx-auto flex max-w-5xl flex-col items-center">
           <div className="w-28 h-28 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-4 border-4 border-white/30">
             {profile?.avatar_url ? (
               <img 
@@ -124,8 +124,8 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="px-6 -mt-6">
-        <div className="bg-white rounded-3xl shadow p-6 space-y-6">
+      <div className="mx-auto -mt-6 max-w-3xl px-6 lg:-mt-8 lg:px-8">
+        <div className="space-y-6 rounded-3xl bg-white p-6 shadow lg:p-8">
           
           
           
@@ -148,7 +148,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Actions */}
-        <div className="mt-8 space-y-3">
+        <div className="mt-8 space-y-3 lg:mt-10">
           <button 
           onClick={() => route.push('/onboarding')}
           className="w-full bg-white border border-gray-200 hover:bg-gray-50 transition py-4 rounded-2xl font-medium  text-black flex items-center justify-center gap-3">

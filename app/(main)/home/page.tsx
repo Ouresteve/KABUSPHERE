@@ -469,7 +469,7 @@ export default function HomePage() {
       
       {/* Top Navigation */}
       <div className="sticky top-0 bg-white border-b z-50 px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Image 
               src="/images/logo.jpeg" 
@@ -501,7 +501,7 @@ export default function HomePage() {
       {/* Show install prompt if available */}
         {/* Install Prompt Banner */}
   {showInstallPrompt && (
-    <div className="mx-4 mt-4 bg-white border border-[#0047B3]/20 rounded-3xl p-5 shadow-sm">
+    <div className="mx-4 mt-4 max-w-5xl border border-[#0047B3]/20 rounded-3xl bg-white p-5 shadow-sm lg:mx-auto">
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 bg-[#0047B3] rounded-2xl flex items-center justify-center flex-shrink-0">
           <span className="text-white text-2xl">K</span>
@@ -530,7 +530,7 @@ export default function HomePage() {
   )}
 
       {/* Campus Updates */}
-      <div className="px-4 mt-4">
+      <div className="mx-auto mt-4 max-w-5xl px-4 lg:mt-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-[#001533]">Campus Updates</h2>
         </div>
@@ -542,7 +542,7 @@ export default function HomePage() {
 
       {/* Filters */}
      {/* Filters */}
-<div className="px-4 py-4 flex gap-2 overflow-x-auto">
+<div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-4 lg:py-6">
   {['All', 'Confessions', 'General', 'Market','Your Posts'].map((filter) => (
     <button
       key={filter}
@@ -559,9 +559,9 @@ export default function HomePage() {
 </div>
 
       {/* Feed */}
-      <div className="px-4 space-y-6">
+      <div className="mx-auto max-w-3xl space-y-6 px-4 lg:space-y-8">
         {loading ? (
-  <div className="space-y-6 px-4">
+  <div className="space-y-6">
     {[1, 2, 3].map((i) => (
       <div key={i} className="bg-white rounded-3xl p-5 animate-pulse">
         <div className="flex items-center gap-3">
@@ -581,7 +581,7 @@ export default function HomePage() {
           </div>
         ) : (
           filteredPosts.map((post) => (
-            <div key={post.id} data-post-id={post.id} className="bg-white rounded-3xl p-5 shadow-sm">
+            <div key={post.id} data-post-id={post.id} className="rounded-3xl bg-white p-5 shadow-sm lg:p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {post.post_type !== 'confession' && post.profiles?.avatar_url ? (

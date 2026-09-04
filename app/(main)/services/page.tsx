@@ -46,11 +46,11 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
       <div className="sticky top-0 bg-white border-b z-40 px-4 py-4">
-        <h1 className="text-2xl font-bold text-[#001533]">Services</h1>
+        <h1 className="mx-auto max-w-5xl text-2xl font-bold text-[#001533]">Services</h1>
       </div>
 
-      <div className="p-4">
-        <div className="bg-white rounded-3xl p-8 text-center">
+      <div className="mx-auto max-w-4xl p-4 lg:px-8 lg:py-8">
+        <div className="rounded-3xl bg-white p-8 text-center lg:p-12">
           <div className="flex justify-center gap-6 mb-6">
             <Truck className="w-12 h-12 text-[#0047B3]" />
             <Shirt className="w-12 h-12 text-[#0047B3]" />
@@ -65,7 +65,7 @@ export default function ServicesPage() {
           <button
             onClick={handleVote}
             disabled={hasVoted || loading}
-            className={`mt-10 w-full py-4 rounded-2xl font-semibold flex items-center justify-center gap-3 transition-all ${
+            className={`mx-auto mt-10 flex w-full max-w-xl items-center justify-center gap-3 rounded-2xl py-4 font-semibold transition-all ${
               hasVoted 
                 ? 'bg-green-100 text-green-700' 
                 : 'bg-[#0047B3] text-white hover:bg-[#003B99]'
