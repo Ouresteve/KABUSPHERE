@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import HomePage from './home/page';
 import MarketPage from './market/page';
+import ListProductPage from './market/list/page';
 import CampusPage from './campus/page';
 import ProfilePage from './profile/page';
 import CreatePostPage from './create/page';
@@ -50,6 +51,9 @@ export default function MainApp() {
     
         return <CreatePostPage />;
     }
+      if (pathname.includes('/market/list')) {
+        return <ListProductPage />;
+      }
     if (pathname.includes('/onboarding')){
         return <OnboardingPage/>;
     }
@@ -82,8 +86,8 @@ export default function MainApp() {
             </div>
             <nav className="space-y-2" aria-label="Main navigation">
               {[
-                { icon: Home, label: 'Home', tab: 'home' },
                 { icon: Store, label: 'Market', tab: 'market' },
+                { icon: Home, label: 'Feed', tab: 'home' },
                 { icon: Users, label: 'Services', tab: 'services' },
                 { icon: User, label: 'Profile', tab: 'profile' },
               ].map((item) => (
@@ -106,8 +110,8 @@ export default function MainApp() {
         <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white px-4 py-2 lg:hidden">
           <div className="flex justify-around items-center max-w-md mx-auto">
             {[
-              { icon: Home, label: 'Home', tab: 'home' },
               { icon: Store, label: 'Market', tab: 'market' },
+              { icon: Home, label: 'Feed', tab: 'home' },
               { icon: Users, label: 'Services', tab: 'services' },
               { icon: User, label: 'Profile', tab: 'profile' },
             ].map((item) => (
