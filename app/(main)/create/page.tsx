@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Image as ImageIcon, Send, X, Users, Store,MessageCircle } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, X, Users, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
@@ -14,9 +14,7 @@ export default function CreatePostPage() {
   const { addToast } = useToast();
 
   const [content, setContent] = useState('');
-  const [postType, setPostType] = useState<'general' | 'market' | 'confession'>('general');
-  const [price, setPrice] = useState('');
-  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [postType, setPostType] = useState<'general' | 'confession'>('general');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<File | null>(null);
@@ -94,8 +92,8 @@ export default function CreatePostPage() {
       content: content.trim(),
       image_url,
       video_url: null,
-      price: postType === 'market' ? parseFloat(price) || null : null,
-      whatsapp_number: postType === 'market' ? whatsappNumber : null,
+      price: null,
+      whatsapp_number: null,
       is_anonymous: isAnonymous,
       is_official: false,
     });
@@ -113,7 +111,7 @@ export default function CreatePostPage() {
         await sendPushNotification(
           u.id,
           "New Post",
-          `${postType === 'confession' ? 'Anonymous' : profile.full_name || 'Someone'} just posted in ${postType === 'general' ? 'General' : postType === 'market' ? 'Market' : 'Confessions'} feed!`,
+          `${postType === 'confession' ? 'Anonymous' : profile.full_name || 'Someone'} just posted in ${postType === 'general' ? 'General' : 'Confessions'} feed!`,
           '/home'
         );
       });
@@ -146,10 +144,9 @@ export default function CreatePostPage() {
       <div className="mx-auto max-w-4xl space-y-6 p-4 lg:px-8 lg:py-8">
         
         {/* Post Type Selector */}
-        <div className="grid grid-cols-3 text-black gap-3">
+        <div className="grid grid-cols-2 text-black gap-3">
           {[
             { type: 'general' as const, label: 'General', icon: Users },
-            { type: 'market' as const, label: 'Market', icon: Store },
             { type: 'confession' as const, label: 'Confession', icon: MessageCircle },
             ].map(({ type, label, icon: Icon }) => (
          <button
@@ -175,31 +172,6 @@ export default function CreatePostPage() {
           className="w-full h-52 bg-white border border-gray-200 focus:border-[#0047B3] rounded-3xl p-5 text-lg  text-black leading-relaxed resize-none focus:outline-none"
         />
 
-        {/* Market Fields */}
-        {postType === 'market' && (
-          <div className="bg-white p-5 rounded-3xl space-y-4 border border-gray-100">
-            <div>
-              <label className="text-sm text-gray-600 block mb-2">Price (KSh)</label>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="e.g. 25000"
-                className="w-full border border-gray-200 rounded-2xl p-4 text-lg text-black"
-              />
-            </div>
-            <div>
-              <label className="text-black text-gray-600 block mb-2">WhatsApp Number</label>
-              <input
-                type="tel"
-                value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
-                placeholder="+254712345678"
-                className="w-full border border-gray-200 rounded-2xl p-4 text-lg text-black "
-              />
-            </div>
-          </div>
-        )}
 
          {/* Image Upload */}
         <div className="border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center hover:border-[#0047B3] transition cursor-pointer" onClick={() => document.getElementById('image-upload')?.click()}>

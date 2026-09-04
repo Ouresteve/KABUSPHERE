@@ -158,6 +158,13 @@ export default function ProfilePage() {
             Edit Profile
           </button>
 
+          <button
+            onClick={() => route.push('/market/manage')}
+            className="w-full rounded-2xl border border-blue-100 bg-blue-50 py-4 font-medium text-[#0047B3] transition hover:bg-blue-100"
+          >
+            Manage Marketplace Listings
+          </button>
+
           <button 
             onClick={signOut}
             className="w-full bg-red-50 text-red-600 hover:bg-red-100 transition py-4 rounded-2xl font-medium flex items-center justify-center gap-3"

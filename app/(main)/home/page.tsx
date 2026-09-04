@@ -233,7 +233,6 @@ export default function HomePage() {
   const filteredPosts = posts.filter(post => {
       if(activeFilter === 'All') return true;
       if (activeFilter ==='General') return post.post_type === 'general';
-      if(activeFilter === 'Market') return post.post_type ==='market';
       if(activeFilter === 'Confessions') return post.post_type === 'confession';
       if (activeFilter === 'Your Posts') return post.user_id === user?.id; 
       return true;
@@ -543,7 +542,7 @@ export default function HomePage() {
       {/* Filters */}
      {/* Filters */}
 <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-4 lg:py-6">
-  {['All', 'Confessions', 'General', 'Market','Your Posts'].map((filter) => (
+  {['All', 'Confessions', 'General', 'Your Posts'].map((filter) => (
     <button
       key={filter}
       onClick={() => setActiveFilter(filter)}
@@ -686,14 +685,6 @@ export default function HomePage() {
           ))
         )}
       </div>
-
-     {/* Floating Post Button */}
-<button 
-  onClick={() => window.location.href='/create'}
-  className="fixed bottom-24 right-6 w-16 h-16 bg-[#0047B3] hover:bg-[#003B99] text-white rounded-3xl shadow-xl flex items-center justify-center z-50 active:scale-95 transition-all duration-200"
->
-  <Plus className="w-8 h-8" />
-</button>
 
       {/* Comments Modal */}
       {selectedPostId && (

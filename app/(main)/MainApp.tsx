@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import HomePage from './home/page';
 import MarketPage from './market/page';
 import ListProductPage from './market/list/page';
+import ManageListingsPage from './market/manage/page';
 import CampusPage from './campus/page';
 import ProfilePage from './profile/page';
 import CreatePostPage from './create/page';
@@ -13,9 +14,7 @@ import ServicesPage from './services/page';
 
 
 
-import { 
-  Home, Users, Store, User
-} from 'lucide-react';
+import { Home, Users, Store, User, Plus } from 'lucide-react';
 
 export default function MainApp() {
   const pathname = usePathname();
@@ -51,6 +50,9 @@ export default function MainApp() {
     
         return <CreatePostPage />;
     }
+      if (pathname.includes('/market/manage')) {
+        return <ManageListingsPage />;
+      }
       if (pathname.includes('/market/list')) {
         return <ListProductPage />;
       }
@@ -70,12 +72,12 @@ export default function MainApp() {
 
   return (
     <>
-      <div className={!pathname.includes('/create') && !pathname.includes('/onboarding') ? 'lg:pl-64' : ''}>
+      <div className={!pathname.includes('/create') && !pathname.includes('/onboarding') && !pathname.includes('/market/list') && !pathname.includes('/market/manage') ? 'lg:pl-64' : ''}>
         {renderPage()}
       </div>
 
       {/* Desktop Navigation */}
-      {!pathname.includes('/create') && !pathname.includes('/onboarding') && (
+      {!pathname.includes('/create') && !pathname.includes('/onboarding') && !pathname.includes('/market/list') && !pathname.includes('/market/manage') && (
         <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-gray-200 bg-white lg:block">
           <div className="flex h-full flex-col px-5 py-8">
             <div className="mb-10 px-3">
@@ -106,19 +108,34 @@ export default function MainApp() {
       )}
 
       {/* Bottom Navigation - Hide on Create Post Page */}
-      {!pathname.includes('/create') && !pathname.includes('/onboarding') && (
+      {!pathname.includes('/create') && !pathname.includes('/onboarding') && !pathname.includes('/market/list') && !pathname.includes('/market/manage') && (
         <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white px-4 py-2 lg:hidden">
-          <div className="flex justify-around items-center max-w-md mx-auto">
+          <div className="mx-auto grid max-w-md grid-cols-5 items-end">
             {[
               { icon: Store, label: 'Market', tab: 'market' },
               { icon: Home, label: 'Feed', tab: 'home' },
+            ].map((item) => (
+              <button
+                key={item.tab}
+                onClick={() => window.location.href = `/${item.tab}`}
+                className={`flex flex-col items-center py-1 px-4 transition ${activeTab === item.tab ? 'text-[#0047B3]' : 'text-gray-500'}`}
+              >
+                <item.icon className="w-6 h-6" />
+                <span className="text-xs mt-1 font-medium">{item.label}</span>
+              </button>
+            ))}
+            <button onClick={() => window.location.href = pathname.includes('/market') ? '/market/list' : '/create'} className="-mt-7 flex flex-col items-center justify-center gap-1 text-[#0047B3]" aria-label={pathname.includes('/market') ? 'List an item' : 'Create a post'}>
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0047B3] text-white shadow-lg ring-4 ring-white"><Plus className="h-7 w-7" /></span>
+              <span className="text-[10px] font-semibold">{pathname.includes('/market') ? 'Sell' : 'Post'}</span>
+            </button>
+            {[
               { icon: Users, label: 'Services', tab: 'services' },
               { icon: User, label: 'Profile', tab: 'profile' },
             ].map((item) => (
               <button
                 key={item.tab}
                 onClick={() => window.location.href = `/${item.tab}`}
-                className={`flex flex-col items-center py-1 px-4 transition ${activeTab === item.tab ? 'text-[#0047B3]' : 'text-gray-500'}`}
+                className={`flex flex-col items-center py-1 px-2 transition ${activeTab === item.tab ? 'text-[#0047B3]' : 'text-gray-500'}`}
               >
                 <item.icon className="w-6 h-6" />
                 <span className="text-xs mt-1 font-medium">{item.label}</span>
