@@ -127,21 +127,23 @@ export default function CreatePostPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b z-50 px-4 py-4 flex items-center justify-between">
-        <button onClick={() => router.push('/home')} className="p-2 -ml-2">
-          <ArrowLeft className="w-6 h-6 text-black" />
-        </button>
-        <h1 className="text-xl font-bold text-[#001533]">Create Post</h1>
-        <button
-          onClick={handlePost}
-          disabled={loading || !content.trim()}
-          className="bg-[#0047B3] hover:bg-[#003B99] disabled:bg-gray-300 text-black px-6 py-2 rounded-2xl font-semibold transition"
-        >
-          {loading ? "Posting..." : "Post"}
-        </button>
+      <div className="sticky top-0 bg-white border-b z-50 px-4 py-4">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <button onClick={() => router.push('/home')} className="p-2 -ml-2">
+            <ArrowLeft className="w-6 h-6 text-black" />
+          </button>
+          <h1 className="text-xl font-bold text-[#001533]">Create Post</h1>
+          <button
+            onClick={handlePost}
+            disabled={loading || !content.trim()}
+            className="bg-[#0047B3] hover:bg-[#003B99] disabled:bg-gray-300 text-black px-6 py-2 rounded-2xl font-semibold transition"
+          >
+            {loading ? "Posting..." : "Post"}
+          </button>
+        </div>
       </div>
 
-      <div className="p-4 space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6 p-4 lg:px-8 lg:py-8">
         
         {/* Post Type Selector */}
         <div className="grid grid-cols-3 text-black gap-3">
@@ -208,7 +210,7 @@ export default function CreatePostPage() {
 
         {imagePreview && (
           <div className="relative">
-            <img src={imagePreview} alt="preview" className="w-full rounded-3xl" />
+            <img src={imagePreview} alt="preview" className="w-full rounded-3xl object-contain lg:mx-auto lg:max-w-lg" />
             <button onClick={removeImage} className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full">
               <X className="w-5 h-5" />
             </button>

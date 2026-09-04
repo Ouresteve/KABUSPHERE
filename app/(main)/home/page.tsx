@@ -631,7 +631,7 @@ export default function HomePage() {
                   alt="Post media" 
                   width={500}
                   height={500}
-                  className="mt-4 mb-4 w-full rounded-2xl object-contain lg:mx-auto lg:max-w-xl" 
+                  className="mt-4 mb-4 w-full rounded-2xl object-contain lg:mx-auto lg:max-w-lg" 
                 />
               )}
               <p className="text-gray-800 leading-relaxed mt-4">{post.content}</p>
