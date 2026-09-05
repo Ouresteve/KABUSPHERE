@@ -11,6 +11,9 @@ import ProfilePage from './profile/page';
 import CreatePostPage from './create/page';
 import OnboardingPage from './onboarding/page';
 import ServicesPage from './services/page';
+import AdminPage from './admin/page';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth-context';
 
 
 
@@ -18,6 +21,7 @@ import { Home, Users, Store, User, Plus } from 'lucide-react';
 
 export default function MainApp() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'home' | 'market' | 'campus' | 'profile' | 'services'>('home');
 
     // Register Service Worker for PWA + Push Notifications
@@ -33,6 +37,16 @@ export default function MainApp() {
         });
     }
   }, []);
+
+  useEffect(() => {
+    if (!pathname || pathname.includes('/admin') || !user) return;
+    const updatePresence = () => {
+      supabase.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', user.id).then(() => undefined);
+    };
+    updatePresence();
+    const interval = window.setInterval(updatePresence, 60_000);
+    return () => window.clearInterval(interval);
+  }, [pathname, user]);
   // Update active tab based on URL
   useEffect(() => {
     if (pathname?.includes('/market')) setActiveTab('market');
@@ -50,6 +64,9 @@ export default function MainApp() {
     
         return <CreatePostPage />;
     }
+      if (pathname.includes('/admin')) {
+        return <AdminPage />;
+      }
       if (pathname.includes('/market/manage')) {
         return <ManageListingsPage />;
       }

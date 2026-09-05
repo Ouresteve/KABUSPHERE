@@ -5,7 +5,10 @@ import {supabase} from './supabase';
 export const checkAllowedEmail = (email: string | undefined): boolean => {
     if(!email) return false;
     const allowedDomains= ['kabarak.ac.ke'];
-    const domain = email.split('@')[1]?.toLowerCase();
+    const adminAllowlist = ['steveoure96@gmail.com'];
+    const normalizedEmail = email.toLowerCase();
+    if (adminAllowlist.includes(normalizedEmail)) return true;
+    const domain = normalizedEmail.split('@')[1];
     return allowedDomains.includes(domain || '');
 
 };
