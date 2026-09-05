@@ -32,11 +32,14 @@ export default function OnboardingPage() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('full_name, whatsapp_number')
+        .select('full_name, course, year, whatsapp_number')
         .eq('id', user.id)
         .single();
 
       setPageLoading(false);
+      if (data?.full_name) setFullName(data.full_name);
+      if (data?.course) setCourse(data.course);
+      if (data?.year) setYear(data.year);
       setWhatsappNumber(data?.whatsapp_number || '');
     };
 
