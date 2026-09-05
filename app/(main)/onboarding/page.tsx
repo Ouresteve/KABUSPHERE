@@ -145,17 +145,50 @@ export default function OnboardingPage() {
               <option value="">Select your course</option>
               <option>Bachelor of Science in Computer Science</option>
               <option>Bachelor of Science in Information Technology</option>
+              <option>Bachelor of Science in Data Science and Analytics</option>
+              <option>Bachelor of Science in Telecommunications</option>
+              <option>Bachelor of Science in Cyber Security</option>
+              <option>Diploma in Computer Science</option>
+              <option>Diploma in Information Technology</option>
+              <option>Certificate in Information Technology</option>
+              <option>Bachelor of Business Management (BBM)</option>
+              <option>Bachelor of Commerce (BCom)</option>
+              <option>Bachelor of Science in Economics and Finance</option>
+              <option>Bachelor of Science in Procurement &amp; Logistics</option>
+              <option>Bachelor of Science in Hospitality Management</option>
+              <option>Diploma in Business Management</option>
+              <option>Diploma in Procurement &amp; Logistics Management</option>
+              <option>Certificate in Business Management</option>
+              <option>Bachelor of Science in Nursing (Direct Entry)</option>
+              <option>Bachelor of Science in Clinical Medicine</option>
+              <option>Bachelor of Science in Public Health</option>
+              <option>Bachelor of Science in Human Nutrition &amp; Dietetics</option>
+              <option>Diploma in Clinical Medicine and Surgery</option>
+              <option>Diploma in Nursing (KRCHN)</option>
+              <option>Bachelor of Pharmacy (BPharm)</option>
+              <option>Bachelor of Laws (LLB)</option>
+              <option>Diploma in Law</option>
+              <option>Bachelor of Education (Arts)</option>
+              <option>Bachelor of Education (Science)</option>
+              <option>Bachelor of Arts in Counseling Psychology</option>
+              <option>Bachelor of Theology</option>
+              <option>Diploma in Education (Arts)</option>
+              <option>Diploma in Theology</option>
+              <option>Bachelor of Mass Communication</option>
+              <option>Bachelor of Music Production &amp; Technology</option>
+              <option>Diploma in Mass Communication</option>
+              <option>Diploma in Music</option>
+              <option>Diploma in Electrical &amp; Electronics Engineering</option>
+              <option>Diploma in Project Management</option>
+              <option>Diploma in Human Resource Management</option>
+              <option>Certificate in Electrical &amp; Electronics Engineering</option>
               <option>Bachelor of Science in Business Administration</option>
               <option>Bachelor of Science in Accounting</option>
-              <option>Bachelor of Commerce</option>
               <option>Bachelor of Science in Economics</option>
-              <option>Bachelor of Arts in Education</option>
               <option>Bachelor of Science in Engineering</option>
               <option>Bachelor of Science in Civil Engineering</option>
               <option>Bachelor of Science in Mechanical Engineering</option>
               <option>Bachelor of Science in Electrical Engineering</option>
-              <option>Bachelor of Science in Nursing</option>
-              <option>Bachelor of Science in Public Health</option>
               <option>Bachelor of Science in Agriculture</option>
               <option>Bachelor of Science in Environmental Science</option>
               <option>Bachelor of Arts in Psychology</option>
