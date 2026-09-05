@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/lib/toast-context";
 import { ToastContainer } from "@/components/ui/ToastContainer";
+import { CookieConsent } from "@/components/ui/CookieConsent";
+import type { Viewport } from "next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KABUSphere - Campus Social Network",
-  description: "Connect with your campus community. Share, discover, and engage with students from Kabarak University.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://kabusphere.vercel.app"),
+  title: "KABUSphere - Kabarak Campus Marketplace",
+  description: "Buy, sell, and connect with the Kabarak University community.",
   applicationName: "KABUSPHERE",
   appleWebApp: {
     capable: true,
@@ -56,7 +59,15 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
   },
   manifest: "/manifest.json",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
+  themeColor: "#0047B3",
 };
 
 export default function RootLayout({
@@ -77,6 +88,7 @@ export default function RootLayout({
         <ToastProvider>
           {children}
           <ToastContainer />
+          <CookieConsent />
         </ToastProvider>
       </body>
     </html>
