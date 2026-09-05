@@ -17,14 +17,25 @@ import { useAuth } from '@/lib/auth-context';
 
 
 
-import { Home, Users, Store, User, Plus } from 'lucide-react';
+import { Home, Users, Store, User, Plus, ShieldCheck } from 'lucide-react';
 
 export default function MainApp() {
   const pathname = usePathname();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'home' | 'market' | 'campus' | 'profile' | 'services'>('home');
+  const [isAdmin, setIsAdmin] = useState(false);
 
     // Register Service Worker for PWA + Push Notifications
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    supabase.from('profiles').select('role').eq('id', user.id).maybeSingle().then(({ data }) => {
+      setIsAdmin(data?.role === 'admin');
+    });
+  }, [user]);
+
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
@@ -109,6 +120,7 @@ export default function MainApp() {
                 { icon: Home, label: 'Feed', tab: 'home' },
                 { icon: Users, label: 'Services', tab: 'services' },
                 { icon: User, label: 'Profile', tab: 'profile' },
+                ...(isAdmin ? [{ icon: ShieldCheck, label: 'Admin Console', tab: 'admin' }] : []),
               ].map((item) => (
                 <button
                   key={item.tab}

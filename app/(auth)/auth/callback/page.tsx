@@ -36,8 +36,14 @@ export default function AuthCallback() {
         } else {
           setStatus('success');
           setMessage('Access verified successfully!');
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          const destination = profile?.role === 'admin' ? '/admin' : '/profile';
           setTimeout(() => {
-            router.push('/profile');
+            router.push(destination);
           }, 2000);
         }
       } catch (error) {
