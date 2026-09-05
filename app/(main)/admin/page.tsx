@@ -28,7 +28,7 @@ export default function AdminPage() {
         setLoading(false);
         return;
       }
-      const onlineSince = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const onlineSince = new Date(Date.now() - 60 * 1000).toISOString();
       const [users, online, listings, activeListings] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }).neq('role', 'admin'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).neq('role', 'admin').gte('last_seen_at', onlineSince),
