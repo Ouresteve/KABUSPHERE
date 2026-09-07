@@ -124,14 +124,24 @@ export default function MarketPage() {
         </div>
       </div>
 
+      <div className="sticky top-[89px] z-30 border-b bg-white/95 px-4 py-3 shadow-sm backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 rounded-2xl border border-gray-200 bg-white p-2">
+          <Search className="ml-2 h-5 w-5 shrink-0 text-gray-400" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products..." className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm text-gray-800 outline-none" />
+          <button onClick={() => setShowFilters(!showFilters)} className="rounded-xl bg-gray-100 p-2.5 text-gray-700" aria-label="Toggle category filters">
+            {showFilters ? <X className="h-5 w-5" /> : <SlidersHorizontal className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
       <main className="mx-auto max-w-6xl px-4 py-6 lg:px-8 lg:py-10">
-        <section className="rounded-3xl bg-[#001533] p-6 text-white shadow-sm lg:p-10">
+        <section className="rounded-3xl bg-[#001533] p-5 text-white shadow-sm lg:p-10">
           <div className="max-w-2xl">
-            <p className="mb-3 text-sm font-semibold text-blue-200">Buy from your campus community</p>
-            <h2 className="text-3xl font-bold tracking-tight lg:text-5xl">Useful things, closer to home.</h2>
-            <p className="mt-4 max-w-xl leading-relaxed text-blue-100">Discover trusted listings from Kabarak students and contact sellers directly on WhatsApp.</p>
+            <p className="mb-2 text-xs font-semibold text-blue-200 lg:mb-3 lg:text-sm">Buy from your campus community</p>
+            <h2 className="text-2xl font-bold tracking-tight lg:text-5xl">Useful things, closer to home.</h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-blue-100 lg:mt-4 lg:text-base">Discover trusted listings from Kabarak students and contact sellers directly on WhatsApp.</p>
           </div>
-          <div className="mt-8 flex max-w-2xl items-center gap-3 rounded-2xl bg-white p-2">
+          <div className="mt-8 hidden max-w-2xl items-center gap-3 rounded-2xl bg-white p-2 lg:flex">
             <Search className="ml-3 h-5 w-5 shrink-0 text-gray-400" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products..." className="min-w-0 flex-1 bg-transparent px-1 py-3 text-gray-800 outline-none" />
             <button onClick={() => setShowFilters(!showFilters)} className="rounded-xl bg-gray-100 p-3 text-gray-700" aria-label="Toggle category filters">
