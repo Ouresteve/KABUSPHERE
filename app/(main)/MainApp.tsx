@@ -87,15 +87,15 @@ export default function MainApp() {
     if (pathname.includes('/onboarding')){
         return <OnboardingPage/>;
     }
-    if (pathname.includes('/market')) {
+    if (pathname.includes('/home')) {
         //setActiveTab('market');
-        return <MarketPage />;
+        return <HomePage />;
     }
     if (pathname.includes('/services')) {
          return <ServicesPage />;
     }
     if (pathname.includes('/profile')) return <ProfilePage />;
-    return <HomePage />;
+    return <MarketPage/>;
   };
 
   return (
