@@ -86,7 +86,7 @@ export default function OnboardingPage() {
     if (upsertError) {
       setError(upsertError.message);
     } else {
-      router.push('/home');
+      router.push('/market');
     }
   };
 

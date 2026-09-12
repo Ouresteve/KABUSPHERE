@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import webpush from 'web-push';
 
 webpush.setVapidDetails(
-  'mailto:youractualemail@gmail.com', // Use your real email
+  'mailto:steveoure96@gmail.com', // Use your real email
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
