@@ -137,7 +137,7 @@ export default function AuthCallback() {
             <div className="space-y-3 pt-4 border-t border-gray-200">
               <p className="text-sm font-medium text-gray-700">Need help?</p>
               <a
-                href="https://wa.me/254792959161?text=Hi%20KABUSphere%20team%2C%20I%20need%20help%20with%20account%20access"
+                href="https://wa.me/254708659394?text=Hi%20KABUSphere%20team%2C%20I%20need%20help%20with%20account%20access"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-2xl gap-2 transition"
