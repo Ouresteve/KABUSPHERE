@@ -145,7 +145,7 @@ export default function AuthCallback() {
                 <MessageCircle className="w-5 h-5" />
                 Contact Support on WhatsApp
               </a>
-              <p className="text-xs text-gray-400">+254792959161</p>
+              <p className="text-xs text-gray-400">+254708659394</p>
             </div>
           </div>
         )}
