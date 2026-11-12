@@ -1,37 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+```markdown
+# KABUSPHERE
+
+**The campus market, made closer.**
+
+KABUSPHERE (KABUSphere) is a campus social network and marketplace built for the Kabarak University community. Students can browse listings, buy and sell items, offer services, chat, and connect — all within a trusted campus environment.
+
+🌐 **Live:** [kabusphere.vercel.app](https://kabusphere.vercel.app)
+
+---
+
+## Features
+
+- **Marketplace** – Browse and list items for sale within the campus community
+- **Services** – Discover and offer campus services
+- **Chat** – Direct messaging between users
+- **Campus Feed** – Stay connected with the Kabarak community
+- **Profiles & Onboarding** – Personalized user profiles
+- **Push Notifications** – Stay updated with web push
+- **Admin tools** – Moderation and management features
+
+---
+
+## Tech Stack
+
+| Layer        | Technology                          |
+|--------------|-------------------------------------|
+| Framework    | Next.js 16 (App Router)             |
+| UI           | React 19, Tailwind CSS 4, Lucide    |
+| Backend      | Supabase (Auth, Database)           |
+| Media        | Cloudinary                          |
+| Auth         | Google OAuth + Supabase Auth        |
+| Notifications| Web Push                            |
+| Hosting      | Vercel                              |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm / yarn / pnpm / bun
+- Supabase project
+- Cloudinary account
+- Google Cloud OAuth credentials
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Ouresteve/KABUSPHERE.git
+cd KABUSPHERE
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+### 3. Environment variables
+
+Create a `.env.local` file in the root:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_vapid_public_key
+VAPID_PRIVATE_KEY=your_vapid_private_key
+```
+
+### 4. Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+app/
+├── (auth)/          # Authentication pages
+├── (main)/          # Main app routes
+│   ├── admin/       # Admin dashboard
+│   ├── campus/      # Campus feed
+│   ├── chat/        # Messaging
+│   ├── create/      # Create listings
+│   ├── home/        # Home
+│   ├── market/      # Marketplace
+│   ├── onboarding/  # User onboarding
+│   ├── profile/     # User profiles
+│   └── services/    # Services marketplace
+├── api/             # API routes (e.g. push notifications)
+components/ui/       # UI components
+lib/                 # Utilities and helpers
+public/              # Static assets
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command         | Description              |
+|-----------------|--------------------------|
+| `npm run dev`   | Start development server |
+| `npm run build` | Build for production     |
+| `npm run start` | Start production server  |
+| `npm run lint`  | Run ESLint               |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# KABUSPHERE
+The project is configured for easy deployment on **Vercel**.
+
+1. Push your code to GitHub
+2. Import the repository in [Vercel](https://vercel.com)
+3. Add the environment variables
+4. Deploy
+
+---
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
+
+---
+
+## License
+
+This project is private and intended for the Kabarak University community.
+
+---
+
+Built with ❤️ for Kabarak
+```
+
+---
