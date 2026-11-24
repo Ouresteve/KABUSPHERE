@@ -17,10 +17,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://kabusphere.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.kabusphere.app"),
   title: "KABUSphere - Kabarak Campus Marketplace",
   description: "Buy, sell, and connect with the Kabarak University community.",
   applicationName: "KABUSPHERE",
+  alternates: {
+    canonical: "/",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

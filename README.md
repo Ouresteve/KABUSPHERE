@@ -6,7 +6,7 @@
 
 KABUSPHERE (KABUSphere) is a campus social network and marketplace built for the Kabarak University community. Students can browse listings, buy and sell items, offer services, chat, and connect — all within a trusted campus environment.
 
-🌐 **Live:** [kabusphere.vercel.app](https://kabusphere.vercel.app)
+🌐 **Live:** [kabusphere.app](https://www.kabusphere.app)
 
 ---
 
@@ -70,6 +70,7 @@ Create a `.env.local` file in the root:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SITE_URL=https://www.kabusphere.app
 
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
 NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset

@@ -8,4 +8,4 @@ Disallow: /api/
 Disallow: /_next/
 Disallow: /create
 
-Sitemap: https://kabusphere.vercel.app/sitemap.xml
+Sitemap: https://www.kabusphere.app/sitemap.xml
