@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.kabusphere.app"),
-  title: "KABUSphere - Kabarak Campus Marketplace",
-  description: "Buy, sell, and connect with the Kabarak University community.",
-  applicationName: "KABUSPHERE",
+  title: "KABUSphere | Kabarak Campus Community",
+  description: "Connect with the Kabarak University community on KABUSphere. Share campus updates, discover what's happening, and explore a student marketplace built for Kabarak.",
+  applicationName: "KABUSphere",
   alternates: {
     canonical: "/",
   },
@@ -35,8 +35,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "KABUSphere",
-    title: "KABUSphere - Campus Social Network",
-    description: "Connect with your campus community. Share, discover, and engage with students from Kabarak University.",
+    title: "KABUSphere | Kabarak Campus Community",
+    description: "Connect with Kabarak University students, share campus updates, and discover what's happening across campus.",
     images: [
       {
         url: "/images/logo.jpeg",
@@ -49,8 +49,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "KABUSphere - Campus Social Network",
-    description: "Connect with your campus community.",
+    title: "KABUSphere | Kabarak Campus Community",
+    description: "Connect with Kabarak University students, share campus updates, and discover what's happening across campus.",
     images: ["/images/logo.jpeg"],
   },
   icons: {
@@ -85,8 +85,20 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#0047B3" />
-<link rel="apple-touch-icon" href="/images/logo.jpeg" /></head>
+        <meta name="theme-color" content="#0047B3" />
+        <link rel="apple-touch-icon" href="/images/logo.jpeg" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "KABUSphere",
+              url: "https://www.kabusphere.app/",
+            }),
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <ToastProvider>
           {children}

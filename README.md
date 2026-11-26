@@ -2,7 +2,7 @@
 ```markdown
 # KABUSPHERE
 
-**The campus market, made closer.**
+**Your campus. Your people. One place to connect.**
 
 KABUSPHERE (KABUSphere) is a campus social network and marketplace built for the Kabarak University community. Students can browse listings, buy and sell items, offer services, chat, and connect — all within a trusted campus environment.
 
