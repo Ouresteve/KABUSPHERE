@@ -6,11 +6,10 @@ import HomePage from './home/page';
 import MarketPage from './market/page';
 import ListProductPage from './market/list/page';
 import ManageListingsPage from './market/manage/page';
-import CampusPage from './campus/page';
 import ProfilePage from './profile/page';
 import CreatePostPage from './create/page';
 import OnboardingPage from './onboarding/page';
-import ServicesPage from './services/page';
+import ClubsPage from './clubs/page';
 import AdminPage from './admin/page';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
@@ -22,25 +21,44 @@ import { Home, Users, Store, User, Plus, ShieldCheck } from 'lucide-react';
 export default function MainApp() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'home' | 'market' | 'campus' | 'profile' | 'services'>('home');
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminUserId, setAdminUserId] = useState<string | null>(null);
+  const activeTab = pathname?.includes('/market')
+    ? 'market'
+    : pathname?.includes('/campus')
+      ? 'campus'
+      : pathname?.includes('/clubs')
+        ? 'clubs'
+        : pathname?.includes('/profile')
+          ? 'profile'
+          : 'home';
+  const isAdmin = !!user && adminUserId === user.id;
 
-    // Register Service Worker for PWA + Push Notifications
   useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-    supabase.from('profiles').select('role').eq('id', user.id).maybeSingle().then(({ data }) => {
-      setIsAdmin(data?.role === 'admin');
-    });
+    if (!user) return;
+    let active = true;
+    supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Could not verify administrator role:', error.message);
+          return;
+        }
+        if (active) setAdminUserId(data?.role === 'admin' ? user.id : null);
+      });
+    return () => {
+      active = false;
+    };
   }, [user]);
 
+    // Register Service Worker for PWA + Push Notifications
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then((registration) => {
+        .then(() => {
           console.log('Service Worker registered successfully');
         })
         .catch((error) => {
@@ -58,18 +76,6 @@ export default function MainApp() {
     const interval = window.setInterval(updatePresence, 60_000);
     return () => window.clearInterval(interval);
   }, [pathname, user]);
-  // Update active tab based on URL
-  useEffect(() => {
-    if (pathname?.includes('/market')) setActiveTab('market');
-    else if (pathname?.includes('/campus')) setActiveTab('campus');
-    else if (pathname?.includes('/services')) setActiveTab('services');
-    else if (pathname?.includes('/profile')) setActiveTab('profile');
-    else if (pathname?.includes('/home')) setActiveTab('home');
-
-    else if (pathname?.includes('/create')) return;
-    else if (pathname?.includes('/onboarding')) return;
-    else setActiveTab('home');
-  }, [pathname]);
   const renderPage = () => {
     if (pathname.includes('/create')){
     
@@ -91,8 +97,8 @@ export default function MainApp() {
         //setActiveTab('market');
         return <HomePage />;
     }
-    if (pathname.includes('/services')) {
-         return <ServicesPage />;
+    if (pathname.includes('/clubs')) {
+         return <ClubsPage />;
     }
     if (pathname.includes('/profile')) return <ProfilePage />;
     return <MarketPage/>;
@@ -118,7 +124,7 @@ export default function MainApp() {
               {[
                 { icon: Store, label: 'Market', tab: 'market' },
                 { icon: Home, label: 'Feed', tab: 'home' },
-                { icon: Users, label: 'Services', tab: 'services' },
+                { icon: Users, label: 'Clubs', tab: 'clubs' },
                 { icon: User, label: 'Profile', tab: 'profile' },
                 ...(isAdmin ? [{ icon: ShieldCheck, label: 'Admin Console', tab: 'admin' }] : []),
               ].map((item) => (
@@ -158,7 +164,7 @@ export default function MainApp() {
               <span className="text-[10px] font-semibold">{pathname.includes('/market') ? 'Sell' : 'Post'}</span>
             </button>
             {[
-              { icon: Users, label: 'Services', tab: 'services' },
+              { icon: Users, label: 'Clubs', tab: 'clubs' },
               { icon: User, label: 'Profile', tab: 'profile' },
             ].map((item) => (
               <button

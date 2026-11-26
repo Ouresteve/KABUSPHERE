@@ -13,12 +13,13 @@ KABUSPHERE (KABUSphere) is a campus social network and marketplace built for the
 ## Features
 
 - **Marketplace** – Browse and list items for sale within the campus community
-- **Services** – Discover and offer campus services
+- **Clubs** – Discover approved campus clubs, request membership, and apply to add clubs
 - **Chat** – Direct messaging between users
 - **Campus Feed** – Stay connected with the Kabarak community
+- **Clubs** – Browse approved clubs, request membership, and submit a club for review
 - **Profiles & Onboarding** – Personalized user profiles
 - **Push Notifications** – Stay updated with web push
-- **Admin tools** – Moderation and management features
+- **Admin tools** – Review club applications and assign roles within each club
 
 ---
 
@@ -79,6 +80,8 @@ NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_vapid_public_key
 VAPID_PRIVATE_KEY=your_vapid_private_key
 ```
 
+For club logos, configure the Cloudinary unsigned upload preset to accept only PNG, JPEG, and WebP images and enforce a 5 MB maximum upload size. Browser-side validation improves usability but is not a security boundary.
+
 ### 4. Run the development server
 
 ```bash
@@ -97,13 +100,14 @@ app/
 ├── (main)/          # Main app routes
 │   ├── admin/       # Admin dashboard
 │   ├── campus/      # Campus feed
+│   ├── clubs/       # Club directory, applications, and memberships
 │   ├── chat/        # Messaging
 │   ├── create/      # Create listings
 │   ├── home/        # Home
 │   ├── market/      # Marketplace
 │   ├── onboarding/  # User onboarding
 │   ├── profile/     # User profiles
-│   └── services/    # Services marketplace
+│   └── services/    # Legacy route redirecting to Clubs
 ├── api/             # API routes (e.g. push notifications)
 components/ui/       # UI components
 lib/                 # Utilities and helpers
@@ -130,7 +134,8 @@ The project is configured for easy deployment on **Vercel**.
 1. Push your code to GitHub
 2. Import the repository in [Vercel](https://vercel.com)
 3. Add the environment variables
-4. Deploy
+4. Run `supabase/migrations/20261126090000_clubs_directory.sql` in the Supabase SQL Editor before deploying the Clubs feature. This creates the campus/club/membership schema and the admin-only search and role-assignment functions.
+5. Deploy
 
 ---
 

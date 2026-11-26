@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/services",
+        destination: "/clubs",
+        permanent: true,
+      },
+      {
         source: "/:path*",
         has: [{ type: "host", value: "kabusphere.vercel.app" }],
         destination: "https://www.kabusphere.app/:path*",
