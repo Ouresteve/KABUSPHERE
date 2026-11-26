@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-003",
+  "type": "refactor",
+  "description": "Update app/(main)/clubs/page.tsx to remove the inline manager panels (join-request list and ClubBadgeManager) from club cards, replace them with a 'Manage club →' link, add an event countdown chip to cards that have upcoming events, and prune any imports that become unused. Depends on FEAT-002 (the manage route must exist for the link to be valid) and FEAT-001 (get_club_events RPC for countdown data).",
+  "status": "completed",
+  "steps": [
+    "In the Club type definition (around line 38), remove the join_requests field: `join_requests: JoinRequest[]`. Add a new optional field: `next_event_date: string | null`.",
+
+    "In loadData(), remove the entire managerRequests parallel fetch (the Promise.all that calls get_organization_join_requests for each managerClubId). After clubs are loaded and member counts mapped, make a single call to get upcoming events: for each club that has at least one manager role for the current user, call supabase.rpc('get_club_events', { p_organization_id: club.id }) OR batch them all in a parallel Promise.all. Store the nearest future non-cancelled event_date per club_id. SIMPLER APPROACH: after building the initial clubs array, do one Promise.all over all loaded clubs (not just manager clubs) calling get_club_events for each, pick the minimum future event_date, and store it. Only fire these calls when the clubs array is non-empty to avoid unnecessary work for logged-out users. Attach next_event_date to each Club object.",
+
+    "Remove the following state variables that only served the inline panels: busyRequest (keep — still needed for join actions), setBusyRequest (keep). Actually: remove reviewJoinRequest function entirely. Remove startEditingClub, saveClubDetails, handleClubBadgesChanged functions. Remove editingClubId, editName, editCategory, editDescription, editLogoFile state. Remove the uploadClubLogo function (it has moved to the manage page). Remove the managerClubIds / adminClubIds derivation logic from loadData since they were only used to build join_requests and badgesByClub. Keep is_manager and is_club_admin flags on the Club type as they drive the 'Manage club' button visibility.",
+
+    "In the Club type, remove the badges field: `badges: ClubBadge[]` (badges are now managed in the manage page). Remove the ClubBadge type export if it's only used internally. Remove the JoinRequest type if it's no longer referenced. Keep ClubRow, MembershipRow, Club, ClubApplication types.",
+
+    "In the club card JSX (the article element rendered in filteredClubs.map): a) Remove the entire editingClubId === club.id conditional block (the edit form). b) Remove the is_manager section (the border-t bg-slate-50 div containing join requests list and ClubBadgeManager). c) Remove the 'Edit club' button (Pencil icon button) from the card header. d) After the existing member count row, add an event countdown chip: if club.next_event_date is not null, render a small chip — `<div className='mt-2 inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#0047B3]'><Clock3 className='h-3 w-3' />{formatCountdown(club.next_event_date)}</div>`. e) After the join/member status button block, add: if (club.is_manager || club.is_club_admin) render `<Link href={'/clubs/' + club.slug + '/manage'} className='mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0047B3] px-4 py-3 text-sm font-semibold text-white hover:bg-[#003B99]'>Manage club <ArrowRight className='h-4 w-4' /></Link>`. Import Link from 'next/link' and ArrowRight from 'lucide-react'.",
+
+    "Add a pure helper function formatCountdown(eventDate: string): string above the component. It should compute the difference between new Date(eventDate) and new Date(), and return a human-readable string like '3 days' or '2h 15m' or 'Today' (< 1 hour). This is a static display (no live interval on the directory page — the manage page has the live countdown).",
+
+    "Remove unused imports: Check, Pencil, ImagePlus (removed with edit form/logo). Remove ClubBadgeManager import (panel removed). Keep all other imports. Also remove the uploadClubLogo async function at the top of the file (it's been moved to the manage page). Remove CloudinaryUploadResponse type if no longer used here.",
+
+    "In loadData, remove the badgeResult parallel fetch (the organization_badges select). Remove the badgesByClub Map construction and the badges field from the setClubs call. Remove adminClubIds if it was only used for badge fetching — WAIT: check if adminClubIds is still needed. It is only needed for is_club_admin flag which is computed from membershipRows directly in the .map() call, so adminClubIds as a separate variable may still be needed. Keep it only if used. Remove the managerRequests parallel Promise.all and all code that builds requestsByClub."
+  ],
+  "acceptance_criteria": [
+    "No inline join-request panels on club cards",
+    "No ClubBadgeManager in clubs/page.tsx",
+    "No inline club edit form in clubs/page.tsx",
+    "Club cards for is_manager or is_club_admin users show a 'Manage club' link pointing to /clubs/[slug]/manage",
+    "Club cards show a countdown chip when next_event_date is not null",
+    "No TypeScript errors — npm run build exits 0",
+    "No unused imports remain"
+  ],
+  "verification": [
+    "npm run build (from f:\\Desktop\\KABU CONNECT\\kabu-sphere) — must exit 0 with no TypeScript errors or unused-import warnings that cause build failure"
+  ],
+  "blocked_reason": null,
+  "findings": "Implemented all FEAT-003 steps. Removed inline join-request panels, ClubBadgeManager, and edit form from club cards. Added 'Manage club' Link for is_manager/is_club_admin users. Added event countdown chip using get_club_events RPC. Removed unused types (JoinRequest, CloudinaryUploadResponse), state vars (editingClubId, editName, editCategory, editDescription, editLogoFile), and functions (startEditingClub, saveClubDetails, handleClubBadgesChanged, reviewJoinRequest). Removed unused imports (Check, Pencil, ImagePlus, ClubBadgeManager, UserName/UserBadge). Added ArrowRight and Link imports. Build passes (exit 0, no TypeScript errors)."
+}
