@@ -41,6 +41,10 @@ type CallerMembership = {
   role: ClubRole;
 } | null;
 
+type ClubBadgeItem = { badge_id: string; name: string; color: string; description: string; is_visible: boolean };
+type Announcement = { id: string; title: string; body: string; is_pinned: boolean; created_at: string; author_name: string };
+type ClubMemberData = { announcements: Announcement[]; caller_club_badges: ClubBadgeItem[]; caller_join_date: string };
+
 type ClubPublicData = {
   club: {
     id: string;
@@ -79,6 +83,20 @@ function buildCountdown(eventDate: string): Countdown {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
+function relativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const secs = Math.floor(diff / 1000);
+  if (secs < 60) return 'just now';
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days} day${days === 1 ? '' : 's'} ago`;
+  const months = Math.floor(days / 30);
+  return `${months} month${months === 1 ? '' : 's'} ago`;
+}
+
 export default function ClubPortalPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -93,6 +111,9 @@ export default function ClubPortalPage({ params }: { params: { slug: string } })
 
   const [countdown, setCountdown] = useState<Countdown>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const [memberData, setMemberData] = useState<ClubMemberData | null>(null);
+  const [memberDataLoading, setMemberDataLoading] = useState(false);
 
   // ── Fetch data ──────────────────────────────────────────────────────────────
 
@@ -125,6 +146,22 @@ export default function ClubPortalPage({ params }: { params: { slug: string } })
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  // ── Member data ─────────────────────────────────────────────────────────────
+
+  const fetchMemberData = async () => {
+    setMemberDataLoading(true);
+    const { data: md, error: mdErr } = await supabase.rpc('get_club_member_data', { p_slug: params.slug });
+    setMemberDataLoading(false);
+    if (!mdErr && md) setMemberData(md as ClubMemberData);
+  };
+
+  useEffect(() => {
+    if (user && data?.caller_membership?.status === 'active') {
+      void fetchMemberData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, data]);
 
   // ── Countdown ───────────────────────────────────────────────────────────────
 
@@ -221,6 +258,14 @@ export default function ClubPortalPage({ params }: { params: { slug: string } })
   const hiddenCount = active_members.length - displayedMembers.length;
 
   const nearestEvent = upcoming_events[0] ?? null;
+
+  const badgeColorMap: Record<string, string> = {
+    blue: 'bg-blue-100 text-blue-800',
+    green: 'bg-green-100 text-green-800',
+    purple: 'bg-purple-100 text-purple-800',
+    amber: 'bg-amber-100 text-amber-800',
+    rose: 'bg-rose-100 text-rose-800',
+  };
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] pb-24 text-[#001533]">
@@ -438,6 +483,65 @@ export default function ClubPortalPage({ params }: { params: { slug: string } })
             </div>
           )}
         </section>
+
+        {caller_membership?.status === 'active' && (
+          <>
+            {/* My membership section */}
+            <section className="rounded-2xl bg-white p-6 shadow-sm border-l-4 border-[#0047B3]">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-lg font-bold">My membership</h2>
+                <span className="text-xs text-blue-500 font-semibold">Members only</span>
+              </div>
+              {memberDataLoading ? (
+                <div className="space-y-2">
+                  <div className="h-10 animate-pulse rounded-2xl bg-blue-50" />
+                  <div className="h-10 animate-pulse rounded-2xl bg-blue-50" />
+                </div>
+              ) : memberData ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600">Role: <span className="font-semibold text-[#001533]">{roleFriendly[caller_membership!.role] ?? caller_membership!.role}</span></p>
+                  <p className="text-sm text-gray-600">Member since: <span className="font-semibold text-[#001533]">{new Date(memberData.caller_join_date).toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' })}</span></p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {memberData.caller_club_badges.length === 0 ? (
+                      <p className="text-sm text-gray-400">No club badges yet.</p>
+                    ) : (
+                      memberData.caller_club_badges.map((b) => (
+                        <span key={b.badge_id} className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${badgeColorMap[b.color] ?? badgeColorMap['blue']}`}>{b.name}</span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+
+            {/* Club announcements section */}
+            <section className="rounded-2xl bg-white p-6 shadow-sm border-l-4 border-[#0047B3]">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-lg font-bold">Club announcements</h2>
+                <span className="text-xs text-blue-500 font-semibold">Members only</span>
+              </div>
+              {memberDataLoading ? (
+                <div className="space-y-3">
+                  <div className="h-20 animate-pulse rounded-2xl bg-blue-50" />
+                  <div className="h-20 animate-pulse rounded-2xl bg-blue-50" />
+                </div>
+              ) : !memberData || memberData.announcements.length === 0 ? (
+                <p className="text-sm text-gray-500">No announcements yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {memberData.announcements.map((ann) => (
+                    <div key={ann.id} className={ann.is_pinned ? 'rounded-2xl bg-amber-50 border border-amber-200 p-4' : 'rounded-2xl bg-white border border-gray-100 shadow-sm p-4'}>
+                      {ann.is_pinned && <p className="text-xs text-amber-700 font-semibold mb-1">📌 Pinned</p>}
+                      <p className="font-bold text-[#001533]">{ann.title}</p>
+                      <p className="mt-1 text-sm text-gray-700 leading-relaxed">{ann.body}</p>
+                      <p className="mt-2 text-xs text-gray-400">{ann.author_name} · {relativeTime(ann.created_at)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </div>
     </main>
   );

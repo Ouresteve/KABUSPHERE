@@ -57,6 +57,8 @@ type ClubEvent = {
   created_at: string;
 };
 
+type Announcement = { id: string; title: string; body: string; is_pinned: boolean; created_at: string; author_name: string };
+
 type ManageData = {
   club: ClubInfo;
   caller_role: ClubRole;
@@ -160,6 +162,13 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // ── Announcements tab state ─────────────────────────────────────────────
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(false);
+  const [annTitle, setAnnTitle] = useState('');
+  const [annBody, setAnnBody] = useState('');
+  const [annPinned, setAnnPinned] = useState(false);
+
   // ── Fetch manage data ───────────────────────────────────────────────────
 
   const fetchManageData = async () => {
@@ -243,10 +252,21 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
     setEvents((data as ClubEvent[]) ?? []);
   };
 
+  const loadAnnouncements = async (organizationId: string) => {
+    setAnnouncementsLoading(true);
+    const { data, error: annErr } = await supabase.rpc('get_club_announcements', { p_organization_id: organizationId });
+    setAnnouncementsLoading(false);
+    if (annErr) { setError(annErr.message); return; }
+    setAnnouncements((data as Announcement[]) ?? []);
+  };
+
   useEffect(() => {
     if (activeTab === 'Events' && manageData) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       void loadEvents(manageData.club.id);
+    }
+    if (activeTab === 'Announcements' && manageData) {
+      void loadAnnouncements(manageData.club.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, manageData?.club.id]);
@@ -291,6 +311,7 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
     if (role === 'club_admin') tabs.push('Overview');
     if (role === 'club_admin' || role === 'membership_manager') tabs.push('Members');
     if (role === 'club_admin' || role === 'event_manager') tabs.push('Events');
+    if (role === 'club_admin' || role === 'event_manager') tabs.push('Announcements');
     if (role === 'club_admin') tabs.push('Badges');
     return tabs;
   })();
@@ -429,6 +450,45 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
     } else {
       setNotice('Event cancelled.');
       await loadEvents(manageData.club.id);
+    }
+    setBusyKey('');
+  };
+
+  const handlePostAnnouncement = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!manageData) return;
+    setBusyKey('post-ann');
+    setError('');
+    setNotice('');
+    const { error: postErr } = await supabase.rpc('post_club_announcement', {
+      p_organization_id: manageData.club.id,
+      p_title: annTitle.trim(),
+      p_body: annBody.trim(),
+      p_is_pinned: annPinned,
+    });
+    if (postErr) { setError(postErr.message); } else {
+      setNotice('Announcement posted.');
+      setAnnTitle('');
+      setAnnBody('');
+      setAnnPinned(false);
+      await loadAnnouncements(manageData.club.id);
+    }
+    setBusyKey('');
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (!manageData) return;
+    const key = `del-ann:${id}`;
+    setBusyKey(key);
+    setError('');
+    setNotice('');
+    const { error: delErr } = await supabase.rpc('delete_club_announcement', {
+      p_organization_id: manageData.club.id,
+      p_announcement_id: id,
+    });
+    if (delErr) { setError(delErr.message); } else {
+      setNotice('Announcement deleted.');
+      await loadAnnouncements(manageData.club.id);
     }
     setBusyKey('');
   };
@@ -999,6 +1059,66 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
               badges={club_badges}
               onBadgesChanged={refreshManageData}
             />
+          </section>
+        )}
+
+        {/* ── Announcements tab ────────────────────────────────────────── */}
+        {activeTab === 'Announcements' && (caller_role === 'club_admin' || caller_role === 'event_manager') && (
+          <section className="space-y-6">
+            <div className="rounded-2xl bg-white p-5 shadow-sm">
+              <h2 className="font-bold">Post announcement</h2>
+              <form onSubmit={(e) => void handlePostAnnouncement(e)} className="mt-4 space-y-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Title
+                  <input required maxLength={120} value={annTitle} onChange={(e) => setAnnTitle(e.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 text-base text-[#001533] outline-none focus:border-[#0047B3]" />
+                </label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Body
+                  <textarea required maxLength={2000} rows={4} value={annBody} onChange={(e) => setAnnBody(e.target.value)} className="mt-2 w-full resize-y rounded-xl border border-gray-300 px-4 py-3 text-base text-[#001533] outline-none focus:border-[#0047B3]" />
+                </label>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <input type="checkbox" checked={annPinned} onChange={(e) => setAnnPinned(e.target.checked)} className="h-4 w-4 rounded" />
+                  Pin this announcement
+                </label>
+                <button type="submit" disabled={busyKey === 'post-ann'} className="rounded-xl bg-[#0047B3] px-5 py-3 font-semibold text-white hover:bg-[#003B99] disabled:opacity-60">
+                  {busyKey === 'post-ann' ? 'Posting...' : 'Post announcement'}
+                </button>
+              </form>
+            </div>
+            <div className="rounded-2xl bg-white p-5 shadow-sm">
+              <h2 className="font-bold">All announcements</h2>
+              {announcementsLoading ? (
+                <div className="mt-3 space-y-2">
+                  <div className="h-16 animate-pulse rounded-xl bg-blue-50" />
+                  <div className="h-16 animate-pulse rounded-xl bg-blue-50" />
+                </div>
+              ) : announcements.length === 0 ? (
+                <p className="mt-3 text-sm text-gray-500">No announcements yet.</p>
+              ) : (
+                <ul className="mt-3 space-y-3">
+                  {announcements.map((ann) => (
+                    <li key={ann.id} className={ann.is_pinned ? 'rounded-2xl bg-amber-50 border border-amber-200 p-4' : 'rounded-2xl bg-white border border-gray-100 shadow-sm p-4'}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          {ann.is_pinned && <p className="text-xs text-amber-700 font-semibold mb-1">📌 Pinned</p>}
+                          <p className="font-bold text-[#001533]">{ann.title}</p>
+                          <p className="mt-1 text-sm text-gray-700 leading-relaxed">{ann.body}</p>
+                          <p className="mt-2 text-xs text-gray-400">{ann.author_name} · {new Date(ann.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={busyKey === `del-ann:${ann.id}`}
+                          onClick={() => void handleDeleteAnnouncement(ann.id)}
+                          className="shrink-0 rounded-xl border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          {busyKey === `del-ann:${ann.id}` ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </section>
         )}
       </div>
