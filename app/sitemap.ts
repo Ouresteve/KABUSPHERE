@@ -1,13 +1,38 @@
 import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kabusphere.app';
-  const routes = ['', '/clubs', '/market', '/privacy', '/terms', '/cookies'];
+  const base = 'https://www.kabusphere.app';
 
-  return routes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: route === '/market' ? 'hourly' : route === '/clubs' ? 'weekly' : 'monthly',
-    priority: route === '' ? 1 : route === '/market' ? 0.9 : route === '/clubs' ? 0.8 : 0.5,
-  }));
+  return [
+    {
+      url: `${base}/`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 1.0,
+    },
+    {
+      url: `${base}/market`,
+      lastModified: new Date(),
+      changeFrequency: 'hourly',
+      priority: 0.9,
+    },
+    {
+      url: `${base}/clubs`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${base}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${base}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+  ];
 }

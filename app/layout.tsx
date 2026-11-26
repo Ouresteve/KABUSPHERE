@@ -21,9 +21,6 @@ export const metadata: Metadata = {
   title: "KABUSphere | Kabarak Campus Community",
   description: "Connect with the Kabarak University community on KABUSphere. Share campus updates, discover what's happening, and explore a student marketplace built for Kabarak.",
   applicationName: "KABUSphere",
-  alternates: {
-    canonical: "/",
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

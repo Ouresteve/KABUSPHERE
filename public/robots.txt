@@ -1,11 +1,24 @@
 User-agent: *
-Allow: /
-Allow: /home
-Allow: /market
-Allow: /campus
-Allow: /profile
+
+# Public pages — indexable
+Allow: /$
+Allow: /market$
+Allow: /clubs$
+Allow: /privacy$
+Allow: /terms$
+
+# Auth-gated pages — do not index (they redirect to /login for crawlers)
+Disallow: /home
+Disallow: /profile
+Disallow: /campus
+Disallow: /create
+Disallow: /onboarding
+Disallow: /chat
+Disallow: /admin
+Disallow: /clubs/*/manage
+
+# Technical paths
 Disallow: /api/
 Disallow: /_next/
-Disallow: /create
 
 Sitemap: https://www.kabusphere.app/sitemap.xml
