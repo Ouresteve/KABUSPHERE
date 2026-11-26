@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create Supabase migration 20261127020000_club_announcements.sql. This adds the club_announcements table, its RLS policy, and four security-definer RPCs: post_club_announcement, delete_club_announcement, get_club_announcements, get_member_club_badges, and get_club_member_data. This feature is independent of FEAT-002 (the TypeScript pages) but must be authored first so FEAT-002 can reference the exact RPC signatures.",
+  "status": "completed",
+  "steps": [
+    "Create file f:\\Desktop\\KABU CONNECT\\kabu-sphere\\supabase\\migrations\\20261127020000_club_announcements.sql with the full SQL below.",
+
+    "TABLE: create table public.club_announcements (id uuid primary key default gen_random_uuid(), organization_id uuid not null references public.organizations(id) on delete cascade, title text not null check (length(title) between 2 and 120), body text not null check (length(body) between 2 and 2000), created_by uuid references auth.users(id) on delete set null, created_at timestamptz not null default now(), is_pinned boolean not null default false);",
+
+    "RLS: alter table public.club_announcements enable row level security; drop policy if exists 'Active members can read announcements' on public.club_announcements; create policy 'Active members can read announcements' on public.club_announcements for select to authenticated using ( public.is_platform_admin() or exists ( select 1 from public.organization_memberships m where m.organization_id = club_announcements.organization_id and m.user_id = (select auth.uid()) and m.status = 'active' ) );",
+
+    "RPC post_club_announcement(p_organization_id uuid, p_title text, p_body text, p_is_pinned boolean) returns uuid — security definer, set search_path='': verify caller is active club_admin or event_manager in that org (raise 42501 if not). Validate title length 2-120, body length 2-2000 (raise 22023). Insert into public.club_announcements (organization_id, title, body, is_pinned, created_by) values (..., auth.uid()) returning id.",
+
+    "RPC delete_club_announcement(p_organization_id uuid, p_announcement_id uuid) returns void — security definer, set search_path='': verify caller is active club_admin or event_manager (raise 42501). Delete from public.club_announcements where id = p_announcement_id and organization_id = p_organization_id. If not found raise P0002.",
+
+    "RPC get_club_announcements(p_organization_id uuid) returns table(id uuid, title text, body text, is_pinned boolean, created_at timestamptz, author_name text) — security definer, stable, set search_path='': verify caller is active member (any role, not just manager) in that org, or platform admin (raise 42501 if not). Return query: select a.id, a.title, a.body, a.is_pinned, a.created_at, coalesce(nullif(trim(p.full_name),''),'Kabarak student')::text from public.club_announcements a left join public.profiles p on p.id = a.created_by where a.organization_id = p_organization_id order by a.is_pinned desc, a.created_at desc limit 20.",
+
+    "RPC get_member_club_badges(p_organization_id uuid) returns table(badge_id uuid, name text, color text, description text, is_visible boolean) — security definer, stable, set search_path='': verify caller is active member (raise 42501). Return query: select ub.badge_id, b.name, b.color, b.description, ub.is_visible from public.user_badges ub join public.organization_badges b on b.id = ub.badge_id where b.organization_id = p_organization_id and b.kind = 'club' and b.is_active and ub.user_id = (select auth.uid()) order by b.name.",
+
+    "RPC get_club_member_data(p_slug text) returns json — security definer, set search_path='': look up org by slug where status='active' (raise P0002 if not found). Check caller is active member (raise 42501 with errcode '42501' if not). Then build and return json_build_object with keys: 'announcements' (call the get_club_announcements logic inline or reuse), 'caller_club_badges' (call get_member_club_badges logic inline), 'caller_join_date' (select joined_at from organization_memberships where organization_id=v_org_id and user_id=auth.uid()). For announcements: same query as get_club_announcements limited to 20, returned as json array. For caller_club_badges: same query as get_member_club_badges, returned as json array.",
+
+    "GRANTS: revoke all on function public.post_club_announcement(uuid,text,text,boolean) from public; grant execute on function public.post_club_announcement(uuid,text,text,boolean) to authenticated; revoke all on function public.delete_club_announcement(uuid,uuid) from public; grant execute on function public.delete_club_announcement(uuid,uuid) to authenticated; revoke all on function public.get_club_announcements(uuid) from public; grant execute on function public.get_club_announcements(uuid) to authenticated; revoke all on function public.get_member_club_badges(uuid) from public; grant execute on function public.get_member_club_badges(uuid) to authenticated; revoke all on function public.get_club_member_data(text) from public; grant execute on function public.get_club_member_data(text) to authenticated."
+  ],
+  "acceptance_criteria": [
+    "File f:\\Desktop\\KABU CONNECT\\kabu-sphere\\supabase\\migrations\\20261127020000_club_announcements.sql exists and contains all five RPCs, the table DDL, and the RLS policy.",
+    "All RPCs use `security definer` and `set search_path = ''`.",
+    "post_club_announcement and delete_club_announcement restrict to club_admin or event_manager callers.",
+    "get_club_announcements, get_member_club_badges, and get_club_member_data restrict to active members (or platform admin).",
+    "get_club_member_data raises errcode '42501' for non-members, which the client will detect.",
+    "All five RPCs grant execute to authenticated and revoke from public."
+  ],
+  "verification": [
+    "npm run build from f:\\Desktop\\KABU CONNECT\\kabu-sphere — must exit 0 (SQL file is not compiled by TypeScript, so this confirms no TS regressions from this file existing). The SQL will be applied to Supabase by the user separately."
+  ],
+  "blocked_reason": null,
+  "findings": "Migration created at supabase/migrations/20261127020000_club_announcements.sql. All five RPCs (post_club_announcement, delete_club_announcement, get_club_announcements, get_member_club_badges, get_club_member_data) implemented with security definer and set search_path=''. Table DDL and RLS policy in place. npm run build exits 0 with no TypeScript errors. Committed as feat: club announcements migration (37ef58c)."
+}

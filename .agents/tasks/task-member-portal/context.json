@@ -1,0 +1,24 @@
+{
+  "project_type": "Next.js 16 app-router project (TypeScript strict, Tailwind 4)",
+  "language": "TypeScript (strict, no implicit any)",
+  "build_system": "Next.js 16 / npm. No monorepo. Build: npm run build. Lint: npm run lint. No separate compile step.",
+  "test_framework": "None — verification is npm run build passing with 0 errors",
+  "build_command": "npm run build",
+  "test_command": "npm run build",
+  "verification_instructions": "Run `npm run build` from f:\\Desktop\\KABU CONNECT\\kabu-sphere. Exit code 0 and no TypeScript errors = pass. The dev server is never used for verification.",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "Windows (PowerShell). Paths with parentheses like app/(main) must be quoted in shell commands. Never restart the dev server. Git push is required at the end of the task.",
+  "contribution_requirements": "All DB mutations via security-definer RPCs — no direct table writes from client. TypeScript strict — no implicit 'any'. Match existing colour palette: bg-[#F8FAFC], text-[#001533], bg-[#0047B3], rounded-2xl, shadow-sm. Use void operator on all floating async calls.",
+  "key_patterns": "1) Supabase client: `import { supabase } from '@/lib/supabase'`. 2) Auth: `import { useAuth } from '@/lib/auth-context'` — returns { user, loading, signOut }. 3) RPC calls: `supabase.rpc('rpc_name', { p_param: value })`. 4) All pages in app/(main)/ are 'use client'. 5) Lucide-react for icons. 6) next/image for images. 7) next/navigation for useRouter/useParams. 8) Loading skeletons use animate-pulse + bg-blue-50/bg-slate-200. 9) Existing club roles in organization_memberships: club_admin, membership_manager, event_manager (NOTE: 'member' is NOT a valid role in this system — regular members have no role column value besides these three). 10) is_organization_manager() helper checks club_admin OR membership_manager. 11) is_platform_admin() checks profiles.role = 'admin'. 12) organization_memberships columns include: user_id, organization_id, status ('pending','active','rejected','left'), role (ClubRole), requested_at, joined_at. 13) profiles table has: id, full_name. 14) organization_badges table: id, kind ('school'|'club'), organization_id, name, color, description, is_active. 15) user_badges table: user_id, badge_id, awarded_by, is_visible. 16) The manage page uses setError/setNotice for global banners — reuse this pattern for the Announcements tab. 17) Tab visibility is controlled by the visibleTabs computed array — append to it. 18) The manage page loads tab data in a useEffect watching [activeTab, manageData?.club.id] — follow this pattern for Announcements.",
+  "relevant_files": [
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\app\\(main)\\clubs\\[slug]\\page.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\app\\(main)\\clubs\\[slug]\\manage\\page.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\supabase\\migrations\\20261127010000_club_portal.sql",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\supabase\\migrations\\20261126120000_club_management_badges.sql",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\components\\UserName.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\components\\ClubBadgeManager.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\lib\\supabase.ts",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\lib\\auth-context.tsx"
+  ],
+  "directory_structure": "app/(main)/ — user-facing pages. app/(main)/clubs/[slug]/page.tsx — public club portal. app/(main)/clubs/[slug]/manage/page.tsx — club manage dashboard. components/ — ClubBadgeManager.tsx, UserName.tsx. lib/ — supabase.ts, auth-context.tsx. supabase/migrations/ — ordered SQL files, next one is 20261127020000_club_announcements.sql."
+}

@@ -1,0 +1,7 @@
+{
+  "task_id": "task-member-portal",
+  "task_description": "Implement club member portal sections (membership card, club badges, announcements) visible only to active members, plus an Announcements management tab in the club manage dashboard for club_admin and event_manager roles. Backed by a new DB migration with four new security-definer RPCs.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}
