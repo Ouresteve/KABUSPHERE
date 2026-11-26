@@ -1,0 +1,93 @@
+[1mdiff --git a/README.md b/README.md[m
+[1mindex fd9ccf7..75affdb 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -2,7 +2,7 @@[m
+ ```markdown[m
+ # KABUSPHERE[m
+ [m
+[31m-**The campus market, made closer.**[m
+[32m+[m[32m**Your campus. Your people. One place to connect.**[m
+ [m
+ KABUSPHERE (KABUSphere) is a campus social network and marketplace built for the Kabarak University community. Students can browse listings, buy and sell items, offer services, chat, and connect — all within a trusted campus environment.[m
+ [m
+[1mdiff --git a/app/layout.tsx b/app/layout.tsx[m
+[1mindex 89a1053..b52c16d 100644[m
+[1m--- a/app/layout.tsx[m
+[1m+++ b/app/layout.tsx[m
+[36m@@ -18,9 +18,9 @@[m [mconst geistMono = Geist_Mono({[m
+ [m
+ export const metadata: Metadata = {[m
+   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.kabusphere.app"),[m
+[31m-  title: "KABUSphere - Kabarak Campus Marketplace",[m
+[31m-  description: "Buy, sell, and connect with the Kabarak University community.",[m
+[31m-  applicationName: "KABUSPHERE",[m
+[32m+[m[32m  title: "KABUSphere | Kabarak Campus Community",[m
+[32m+[m[32m  description: "Connect with the Kabarak University community on KABUSphere. Share campus updates, discover what's happening, and explore a student marketplace built for Kabarak.",[m
+[32m+[m[32m  applicationName: "KABUSphere",[m
+   alternates: {[m
+     canonical: "/",[m
+   },[m
+[36m@@ -35,8 +35,8 @@[m [mexport const metadata: Metadata = {[m
+   openGraph: {[m
+     type: "website",[m
+     siteName: "KABUSphere",[m
+[31m-    title: "KABUSphere - Campus Social Network",[m
+[31m-    description: "Connect with your campus community. Share, discover, and engage with students from Kabarak University.",[m
+[32m+[m[32m    title: "KABUSphere | Kabarak Campus Community",[m
+[32m+[m[32m    description: "Connect with Kabarak University students, share campus updates, and discover what's happening across campus.",[m
+     images: [[m
+       {[m
+         url: "/images/logo.jpeg",[m
+[36m@@ -49,8 +49,8 @@[m [mexport const metadata: Metadata = {[m
+   },[m
+   twitter: {[m
+     card: "summary_large_image",[m
+[31m-    title: "KABUSphere - Campus Social Network",[m
+[31m-    description: "Connect with your campus community.",[m
+[32m+[m[32m    title: "KABUSphere | Kabarak Campus Community",[m
+[32m+[m[32m    description: "Connect with Kabarak University students, share campus updates, and discover what's happening across campus.",[m
+     images: ["/images/logo.jpeg"],[m
+   },[m
+   icons: {[m
+[36m@@ -85,8 +85,20 @@[m [mexport default function RootLayout({[m
+     >[m
+       <head>[m
+         <link rel="manifest" href="/manifest.json" />[m
+[31m-<meta name="theme-color" content="#0047B3" />[m
+[31m-<link rel="apple-touch-icon" href="/images/logo.jpeg" /></head>[m
+[32m+[m[32m        <meta name="theme-color" content="#0047B3" />[m
+[32m+[m[32m        <link rel="apple-touch-icon" href="/images/logo.jpeg" />[m
+[32m+[m[32m        <script[m
+[32m+[m[32m          type="application/ld+json"[m
+[32m+[m[32m          dangerouslySetInnerHTML={{[m
+[32m+[m[32m            __html: JSON.stringify({[m
+[32m+[m[32m              "@context": "https://schema.org",[m
+[32m+[m[32m              "@type": "WebSite",[m
+[32m+[m[32m              name: "KABUSphere",[m
+[32m+[m[32m              url: "https://www.kabusphere.app/",[m
+[32m+[m[32m            }),[m
+[32m+[m[32m          }}[m
+[32m+[m[32m        />[m
+[32m+[m[32m      </head>[m
+       <body className="min-h-full flex flex-col">[m
+         <ToastProvider>[m
+           {children}[m
+[1mdiff --git a/app/page.tsx b/app/page.tsx[m
+[1mindex b24a862..6a6912b 100644[m
+[1m--- a/app/page.tsx[m
+[1m+++ b/app/page.tsx[m
+[36m@@ -23,11 +23,11 @@[m [mexport default function LandingPage() {[m
+       </header>[m
+       <section className="bg-[#001533] px-5 pb-16 pt-10 text-white lg:pb-24 lg:pt-20">[m
+         <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">[m
+[31m-          <div><p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-blue-200"><ShieldCheck className="h-4 w-4" /> Built for Kabarak</p><h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-7xl">The campus market, made closer.</h1><p className="mt-6 max-w-xl text-lg leading-relaxed text-blue-100">Find useful things from your community. Browse first, then sign in when you are ready to buy, sell, or connect.</p><a href="/market" className="mt-8 inline-flex items-center gap-3 rounded-xl bg-white px-5 py-3.5 font-semibold text-[#001533] hover:bg-blue-50">Explore Marketplace <ArrowRight className="h-5 w-5" /></a></div>[m
+[32m+[m[32m          <div><p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-blue-200"><ShieldCheck className="h-4 w-4" /> Built for Kabarak</p><h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-7xl">Your campus. Your people. One place to connect.</h1><p className="mt-6 max-w-xl text-lg leading-relaxed text-blue-100">Join the Kabarak University community on KABUSphere. Share campus updates, discover what is happening, and find useful things from your community.</p><a href="/login" className="mt-8 inline-flex items-center gap-3 rounded-xl bg-white px-5 py-3.5 font-semibold text-[#001533] hover:bg-blue-50">Join KABUSphere <ArrowRight className="h-5 w-5" /></a></div>[m
+           <div className="grid grid-cols-2 gap-4">{products.slice(0, 2).map((product) => <PreviewCard key={product.id} product={product} />)}<div className="flex aspect-square items-center justify-center rounded-3xl bg-[#0055CC] p-8 text-center"><div><Store className="mx-auto h-10 w-10 text-blue-100" /><p className="mt-4 text-2xl font-bold">Buy local.</p><p className="mt-1 text-sm text-blue-100">Sell to your people.</p></div></div></div>[m
+         </div>[m
+       </section>[m
+[31m-      <section className="mx-auto max-w-7xl px-5 py-12 lg:py-16"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0047B3]">A better starting point</p><h2 className="mt-2 text-3xl font-bold">See what is available</h2>{products.length ? <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => <PreviewCard key={product.id} product={product} light />)}</div> : <div className="mt-8 rounded-2xl bg-white p-8 text-center text-gray-500 shadow-sm">The first listings are on their way.</div>}</section>[m
+[32m+[m[32m      <section className="mx-auto max-w-7xl px-5 py-12 lg:py-16"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0047B3]">Campus marketplace</p><h2 className="mt-2 text-3xl font-bold">Find useful things from your community</h2>{products.length ? <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => <PreviewCard key={product.id} product={product} light />)}</div> : <div className="mt-8 rounded-2xl bg-white p-8 text-center text-gray-500 shadow-sm">The first listings are on their way.</div>}</section>[m
+     </main>[m
+   );[m
+ }[m

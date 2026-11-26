@@ -654,30 +654,32 @@ export default function ClubsPage() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredClubs.map((club) => (
               <article key={club.id} className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-                <div className="flex items-start gap-4 p-5">
-                  {club.logo_url ? (
-                    <Image
-                      src={club.logo_url}
-                      alt={`${club.name} logo`}
-                      width={56}
-                      height={56}
-                      className="h-14 w-14 shrink-0 rounded-xl border object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-lg font-bold text-[#0047B3]">
-                      {club.name.slice(0, 1).toUpperCase()}
+                <Link href={`/clubs/${club.slug}`} className="block">
+                  <div className="flex items-start gap-4 p-5">
+                    {club.logo_url ? (
+                      <Image
+                        src={club.logo_url}
+                        alt={`${club.name} logo`}
+                        width={56}
+                        height={56}
+                        className="h-14 w-14 shrink-0 rounded-xl border object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-lg font-bold text-[#0047B3]">
+                        {club.name.slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[#0047B3]">
+                        {club.category}
+                      </p>
+                      <h3 className="mt-1 break-words text-lg font-bold">{club.name}</h3>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {club.campuses?.[0]?.name || 'Kabarak University'}
+                      </p>
                     </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#0047B3]">
-                      {club.category}
-                    </p>
-                    <h3 className="mt-1 break-words text-lg font-bold">{club.name}</h3>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {club.campuses?.[0]?.name || 'Kabarak University'}
-                    </p>
                   </div>
-                </div>
+                </Link>
                 <div className="px-5 pb-5">
                   <p className="line-clamp-3 min-h-[4.5rem] text-sm leading-relaxed text-gray-600">
                     {club.description}

@@ -13,11 +13,10 @@ KABUSPHERE (KABUSphere) is a campus social network and marketplace built for the
 ## Features
 
 - **Marketplace** – Browse and list items for sale within the campus community
-- **Clubs** – Discover approved campus clubs, request membership, and apply to add clubs
+- **Clubs** – Discover approved clubs, request membership, apply to add a club, and manage club details and badges
 - **Chat** – Direct messaging between users
 - **Campus Feed** – Stay connected with the Kabarak community
-- **Clubs** – Browse approved clubs, request membership, and submit a club for review
-- **Profiles & Onboarding** – Personalized user profiles
+- **Profiles & Onboarding** – Personalized profiles with opt-in school badges and awarded club badges
 - **Push Notifications** – Stay updated with web push
 - **Admin tools** – Review club applications and assign roles within each club
 
@@ -134,8 +133,9 @@ The project is configured for easy deployment on **Vercel**.
 1. Push your code to GitHub
 2. Import the repository in [Vercel](https://vercel.com)
 3. Add the environment variables
-4. Run `supabase/migrations/20261126090000_clubs_directory.sql` in the Supabase SQL Editor before deploying the Clubs feature. This creates the campus/club/membership schema and the admin-only search and role-assignment functions.
-5. Deploy
+4. Run the migrations in `supabase/migrations` in timestamp order in the Supabase SQL Editor. The club management and badges migration depends on the clubs directory migration.
+5. In the Admin Console, create school badges and assign verified school affiliations to users. Club admins can edit their club details and award club badges; platform admins can suspend and reactivate clubs.
+6. Deploy
 
 ---
 
