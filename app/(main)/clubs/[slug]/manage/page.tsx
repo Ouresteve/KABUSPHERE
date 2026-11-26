@@ -7,12 +7,10 @@ import {
   ArrowLeft,
   Check,
   X,
-  Users,
   Calendar,
   ImagePlus,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/auth-context';
 import { UserName, type UserBadge } from '@/components/UserName';
 import { ClubBadgeManager } from '@/components/ClubBadgeManager';
 
@@ -128,7 +126,6 @@ async function uploadClubLogo(file: File): Promise<{ url: string } | { error: st
 
 export default function ClubManagePage({ params }: { params: { slug: string } }) {
   const router = useRouter();
-  const { user } = useAuth();
 
   // Core data
   const [manageData, setManageData] = useState<ManageData | null>(null);
@@ -204,6 +201,7 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchManageData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.slug]);
@@ -212,6 +210,7 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
   useEffect(() => {
     if (!manageData || activeTab) return;
     const role = manageData.caller_role;
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (role === 'club_admin') {
       setActiveTab('Overview');
     } else if (role === 'membership_manager') {
@@ -219,6 +218,7 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
     } else {
       setActiveTab('Events');
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [manageData, activeTab]);
 
   // Cleanup logo preview URL
@@ -245,6 +245,7 @@ export default function ClubManagePage({ params }: { params: { slug: string } })
 
   useEffect(() => {
     if (activeTab === 'Events' && manageData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void loadEvents(manageData.club.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
