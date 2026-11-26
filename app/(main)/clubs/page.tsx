@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { BadgeCheck, Building2, Check, Clock3, ImagePlus, Plus, Search, Users, X } from 'lucide-react';
+import { BadgeCheck, Building2, Check, Clock3, ImagePlus, LoaderCircle, Pencil, Plus, Search, Users, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
+import { ClubBadgeManager } from '@/components/ClubBadgeManager';
+import { UserName, type UserBadge } from '@/components/UserName';
 
 type ClubRow = {
   id: string;
@@ -28,13 +30,23 @@ type JoinRequest = {
   user_id: string;
   full_name: string;
   requested_at: string;
+  badges: UserBadge[];
 };
 
 type Club = ClubRow & {
   member_count: number;
   membership_status?: MembershipRow['status'];
   is_manager: boolean;
+  is_club_admin: boolean;
+  badges: ClubBadge[];
   join_requests: JoinRequest[];
+};
+
+export type ClubBadge = {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
 };
 
 type ClubApplication = {
@@ -105,6 +117,11 @@ export default function ClubsPage() {
   const [category, setCategory] = useState(categories[0]);
   const [description, setDescription] = useState('');
   const [clubLogo, setClubLogo] = useState<{ file: File; preview: string } | null>(null);
+  const [editingClubId, setEditingClubId] = useState('');
+  const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState(categories[0]);
+  const [editDescription, setEditDescription] = useState('');
+  const [editLogoFile, setEditLogoFile] = useState<File | null>(null);
   const [authorityConfirmed, setAuthorityConfirmed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -187,8 +204,19 @@ export default function ClubsPage() {
           ),
         )
       : [];
+    const adminClubIds = user
+      ? membershipRows
+          .filter(
+            (membership) =>
+              membership.user_id === user.id &&
+              membership.status === 'active' &&
+              membership.role === 'club_admin',
+          )
+          .map((membership) => membership.organization_id)
+      : [];
 
-    const managerRequests = await Promise.all(
+    const [managerRequests, badgeResult] = await Promise.all([
+      Promise.all(
       managerClubIds.map(async (organizationId) => {
         const { data, error: requestsError } = await supabase.rpc(
           'get_organization_join_requests',
@@ -196,7 +224,16 @@ export default function ClubsPage() {
         );
         return { organizationId, data, error: requestsError };
       }),
-    );
+      ),
+      adminClubIds.length > 0
+        ? supabase
+            .from('organization_badges')
+            .select('id, name, description, color, organization_id')
+            .in('organization_id', adminClubIds)
+            .eq('kind', 'club')
+            .eq('is_active', true)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
 
     if (generation !== loadGeneration.current) return;
 
@@ -216,6 +253,14 @@ export default function ClubsPage() {
         (result.data || []) as JoinRequest[],
       ]),
     );
+    if (badgeResult.error) setError(badgeResult.error.message);
+    const badgesByClub = new Map<string, ClubBadge[]>();
+    for (const badge of (badgeResult.data || []) as (ClubBadge & { organization_id: string })[]) {
+      badgesByClub.set(badge.organization_id, [
+        ...(badgesByClub.get(badge.organization_id) || []),
+        badge,
+      ]);
+    }
 
     setClubs(
       ((clubsResult.data || []) as ClubRow[]).map((club) => ({
@@ -226,6 +271,8 @@ export default function ClubsPage() {
             membership.organization_id === club.id && membership.user_id === user?.id,
         )?.status,
         is_manager: managerClubIds.includes(club.id),
+        is_club_admin: adminClubIds.includes(club.id),
+        badges: badgesByClub.get(club.id) || [],
         join_requests: requestsByClub.get(club.id) || [],
       })),
     );
@@ -308,6 +355,50 @@ export default function ClubsPage() {
       await loadData();
     }
     setBusyRequest('');
+  };
+
+  const startEditingClub = (club: Club) => {
+    setEditingClubId(club.id);
+    setEditName(club.name);
+    setEditCategory(club.category);
+    setEditDescription(club.description);
+    setEditLogoFile(null);
+  };
+
+  const saveClubDetails = async (event: FormEvent<HTMLFormElement>, club: Club) => {
+    event.preventDefault();
+    setBusyRequest(`${club.id}:edit`);
+    setError('');
+    let logoUrl = club.logo_url;
+    if (editLogoFile) {
+      const uploadResult = await uploadClubLogo(editLogoFile);
+      if ('error' in uploadResult) {
+        setError(uploadResult.error);
+        setBusyRequest('');
+        return;
+      }
+      logoUrl = uploadResult.url;
+    }
+
+    const { error: updateError } = await supabase.rpc('update_organization_details', {
+      p_organization_id: club.id,
+      p_name: editName.trim(),
+      p_category: editCategory,
+      p_description: editDescription.trim(),
+      p_logo_url: logoUrl,
+    });
+    if (updateError) {
+      setError(updateError.message);
+    } else {
+      setNotice(`${editName.trim()} club details were updated.`);
+      setEditingClubId('');
+      await loadData();
+    }
+    setBusyRequest('');
+  };
+
+  const handleClubBadgesChanged = async () => {
+    await loadData();
   };
 
   const submitClubApplication = async (event: FormEvent<HTMLFormElement>) => {
@@ -609,10 +700,30 @@ export default function ClubsPage() {
         </div>
 
         {loading || authLoading ? (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div role="status" aria-live="polite" className="mt-6">
+            <div className="mb-4 flex items-center gap-2 text-sm font-medium text-[#0047B3]">
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+              Loading campus clubs...
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((item) => (
-              <div key={item} className="h-56 animate-pulse rounded-2xl bg-white" />
+              <div key={item} className="h-56 animate-pulse rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <div className="flex gap-4">
+                  <div className="h-14 w-14 rounded-xl bg-blue-50" />
+                  <div className="flex-1 space-y-3 pt-1">
+                    <div className="h-3 w-24 rounded bg-slate-200" />
+                    <div className="h-5 w-36 rounded bg-slate-200" />
+                    <div className="h-3 w-28 rounded bg-slate-100" />
+                  </div>
+                </div>
+                <div className="mt-7 space-y-3">
+                  <div className="h-3 w-full rounded bg-slate-100" />
+                  <div className="h-3 w-4/5 rounded bg-slate-100" />
+                  <div className="mt-5 h-10 rounded-xl bg-blue-50" />
+                </div>
+              </div>
             ))}
+            </div>
           </div>
         ) : filteredClubs.length === 0 ? (
           <div className="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
@@ -668,8 +779,58 @@ export default function ClubsPage() {
                     <p className="mt-1 text-xs text-gray-500">
                       {club.campuses?.[0]?.name || 'Kabarak University'}
                     </p>
+                    {club.is_club_admin && (
+                      <button
+                        type="button"
+                        onClick={() => editingClubId === club.id ? setEditingClubId('') : startEditingClub(club)}
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#0047B3] hover:underline"
+                      >
+                        <Pencil className="h-3 w-3" />
+                        {editingClubId === club.id ? 'Cancel editing' : 'Edit club'}
+                      </button>
+                    )}
                   </div>
                 </div>
+                {editingClubId === club.id ? (
+                  <form onSubmit={(event) => void saveClubDetails(event, club)} className="space-y-3 px-5 pb-5">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Club name
+                      <input required minLength={2} maxLength={100} value={editName} onChange={(event) => setEditName(event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" />
+                    </label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Category
+                      <select value={editCategory} onChange={(event) => setEditCategory(event.target.value)} className="mt-1 w-full rounded-lg border bg-white px-3 py-2">
+                        {categories.map((option) => <option key={option}>{option}</option>)}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Description
+                      <textarea required minLength={10} maxLength={1000} rows={4} value={editDescription} onChange={(event) => setEditDescription(event.target.value)} className="mt-1 w-full resize-y rounded-lg border px-3 py-2" />
+                    </label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Replace logo (optional)
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+                            setError('Choose a PNG, JPEG, or WebP logo up to 5 MB.');
+                            event.target.value = '';
+                            return;
+                          }
+                          setError('');
+                          setEditLogoFile(file);
+                        }}
+                        className="mt-1 block w-full text-sm"
+                      />
+                    </label>
+                    <button type="submit" disabled={busyRequest === `${club.id}:edit`} className="rounded-lg bg-[#0047B3] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+                      {busyRequest === `${club.id}:edit` ? 'Saving...' : 'Save details'}
+                    </button>
+                  </form>
+                ) : (
                 <div className="px-5 pb-5">
                   <p className="line-clamp-3 min-h-[4.5rem] text-sm leading-relaxed text-gray-600">
                     {club.description}
@@ -702,6 +863,7 @@ export default function ClubsPage() {
                     </button>
                   )}
                 </div>
+                )}
 
                 {club.is_manager && (
                   <div className="border-t bg-slate-50 p-5">
@@ -715,9 +877,12 @@ export default function ClubsPage() {
                             key={request.user_id}
                             className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white p-3"
                           >
-                            <span className="min-w-0 flex-1 break-words text-sm font-medium">
-                              {request.full_name}
-                            </span>
+                            <UserName
+                              name={request.full_name}
+                              badges={request.badges}
+                              className="min-w-0 flex-1 break-words text-sm"
+                              nameClassName="font-medium"
+                            />
                             <div className="flex gap-2">
                               <button
                                 type="button"
@@ -743,6 +908,13 @@ export default function ClubsPage() {
                           </li>
                         ))}
                       </ul>
+                    )}
+                    {club.is_club_admin && (
+                      <ClubBadgeManager
+                        organizationId={club.id}
+                        badges={club.badges}
+                        onBadgesChanged={handleClubBadgesChanged}
+                      />
                     )}
                   </div>
                 )}

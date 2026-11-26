@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { User, LogOut, Edit3 } from 'lucide-react';
+import { UserName, type UserBadge } from '@/components/UserName';
 
 //import { User, LogOut, Edit3 } from 'lucide-react';
 import {useRouter} from 'next/navigation';
@@ -17,12 +18,24 @@ interface  Profile {
     hostel_address: string;
     whatsapp_number?: string | null;
     avatar_url?: string | null;
+    verified_school_id?: string | null;
     created_at?: string;
 }
+type SchoolBadgeOption = {
+  id: string;
+  name: string;
+  description: string;
+  selected: boolean;
+};
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+  const [schoolBadgeOptions, setSchoolBadgeOptions] = useState<SchoolBadgeOption[]>([]);
+  const [badgeBusyId, setBadgeBusyId] = useState('');
+  const [badgeError, setBadgeError] = useState('');
+  const [badgeNotice, setBadgeNotice] = useState('');
   const route = useRouter();
 
   useEffect(() => {
@@ -44,6 +57,39 @@ export default function ProfilePage() {
 
       if (data) {
         setProfile(data);
+        const [userBadgesResult, schoolBadgesResult] = await Promise.all([
+          supabase
+            .from('user_badges')
+            .select('is_visible, badge:organization_badges!user_badges_badge_id_fkey(name, color, kind)')
+            .eq('user_id', user.id)
+            .eq('is_visible', true),
+          data.verified_school_id
+            ? supabase
+                .from('organization_badges')
+                .select('id, name, description, user_badges!user_badges_badge_id_fkey(user_id, is_visible)')
+                .eq('kind', 'school')
+                .eq('school_id', data.verified_school_id)
+                .eq('is_active', true)
+            : Promise.resolve({ data: [], error: null }),
+        ]);
+        if (userBadgesResult.error || schoolBadgesResult.error) {
+          setBadgeError(userBadgesResult.error?.message || schoolBadgesResult.error?.message || 'Could not load badges.');
+        } else {
+          setUserBadges((userBadgesResult.data || []) as UserBadge[]);
+          setSchoolBadgeOptions(
+            ((schoolBadgesResult.data || []) as {
+              id: string;
+              name: string;
+              description: string;
+              user_badges: { user_id: string; is_visible: boolean }[];
+            }[]).map((badge) => ({
+              id: badge.id,
+              name: badge.name,
+              description: badge.description,
+              selected: badge.user_badges.some((item) => item.user_id === user.id && item.is_visible),
+            })),
+          );
+        }
       } else {
         // Create default profile if none exists
         const newProfile = {
@@ -64,6 +110,37 @@ export default function ProfilePage() {
 
     fetchProfile();
   }, [user]);
+
+  const toggleSchoolBadge = async (badge: SchoolBadgeOption) => {
+    setBadgeBusyId(badge.id);
+    setBadgeError('');
+    setBadgeNotice('');
+    const { error: toggleError } = await supabase.rpc('toggle_school_badge', {
+      p_badge_id: badge.id,
+      p_visible: !badge.selected,
+    });
+    if (toggleError) {
+      setBadgeError(toggleError.message);
+      setBadgeBusyId('');
+      return;
+    }
+
+    setSchoolBadgeOptions((current) =>
+      current.map((item) => item.id === badge.id ? { ...item, selected: !item.selected } : item),
+    );
+    const { data, error: refreshError } = await supabase
+      .from('user_badges')
+      .select('is_visible, badge:organization_badges!user_badges_badge_id_fkey(name, color, kind)')
+      .eq('user_id', user?.id || '')
+      .eq('is_visible', true);
+    if (refreshError) {
+      setBadgeError(refreshError.message);
+    } else {
+      setUserBadges((data || []) as UserBadge[]);
+      setBadgeNotice(badge.selected ? 'School badge hidden from your name.' : 'School badge now appears beside your name.');
+    }
+    setBadgeBusyId('');
+  };
 
   if (loading) {
     return (
@@ -116,7 +193,12 @@ export default function ProfilePage() {
               <User className="w-16 h-16" />
             )}
           </div>
-          <h2 className="text-2xl font-bold">{profile?.full_name}</h2>
+          <UserName
+            name={profile?.full_name || 'Kabarak student'}
+            badges={userBadges}
+            className="justify-center text-2xl font-bold"
+            nameClassName="text-white"
+          />
           <p className="text-blue-200 mt-1">{user?.email}</p>
         </div>
       </div>
@@ -148,6 +230,41 @@ export default function ProfilePage() {
             <p className="font-medium text-[#0047B3]">{profile?.whatsapp_number || 'Not set yet'}</p>
           </div>
         </div>
+
+        <section className="mt-6 rounded-3xl bg-white p-6 shadow lg:p-8">
+          <h2 className="text-lg font-bold text-[#001533]">School badge</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Choose whether your verified school badge appears next to your name across KABUSphere.
+          </p>
+          {badgeError && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{badgeError}</p>}
+          {badgeNotice && <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">{badgeNotice}</p>}
+          {!profile?.verified_school_id ? (
+            <p className="mt-4 rounded-xl bg-blue-50 p-4 text-sm text-blue-800">
+              School badges become available after a KABUSphere administrator verifies your school affiliation.
+            </p>
+          ) : schoolBadgeOptions.length === 0 ? (
+            <p className="mt-4 text-sm text-gray-500">There are no school badges configured for your verified school yet.</p>
+          ) : (
+            <ul className="mt-4 divide-y">
+              {schoolBadgeOptions.map((badge) => (
+                <li key={badge.id} className="flex items-center justify-between gap-4 py-3">
+                  <div>
+                    <p className="font-semibold text-[#001533]">{badge.name}</p>
+                    {badge.description && <p className="mt-1 text-sm text-gray-500">{badge.description}</p>}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!!badgeBusyId}
+                    onClick={() => void toggleSchoolBadge(badge)}
+                    className={`shrink-0 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50 ${badge.selected ? 'border border-gray-300 text-gray-700' : 'bg-[#0047B3] text-white'}`}
+                  >
+                    {badgeBusyId === badge.id ? 'Saving...' : badge.selected ? 'Hide badge' : 'Show badge'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         {/* Actions */}
         <div className="mt-8 space-y-3 lg:mt-10">

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, Store, User, Heart, MessageCircle, Plus, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
+import { UserName, type UserBadge } from '@/components/UserName';
 
 type Product = {
   id: string;
@@ -15,7 +16,7 @@ type Product = {
   condition: string;
   location: string | null;
   seller_whatsapp_number?: string | null;
-  profiles?: { full_name?: string; avatar_url?: string | null } | null;
+  profiles?: { full_name?: string; avatar_url?: string | null; user_badges?: UserBadge[] } | null;
   product_images?: { image_url: string; display_order: number }[];
 };
 
@@ -38,7 +39,18 @@ export default function MarketPage() {
       setError(null);
       const { data, error: productsError } = await supabase
         .from('products')
-        .select('*, profiles(full_name, avatar_url), product_images(image_url, display_order)')
+        .select(`
+          *,
+          profiles(
+            full_name,
+            avatar_url,
+            user_badges!user_badges_user_id_fkey(
+              is_visible,
+              badge:organization_badges!user_badges_badge_id_fkey(id, name, color, kind)
+            )
+          ),
+          product_images(image_url, display_order)
+        `)
         .eq('status', 'Active')
         .order('created_at', { ascending: false });
 
@@ -204,7 +216,12 @@ export default function MarketPage() {
                     <button type="button" onClick={() => setSelectedProduct(product)} className="mt-2 line-clamp-2 text-left text-xs leading-relaxed text-gray-500 sm:text-sm">{product.description}</button>
                     <div className="mt-3 flex min-w-0 items-center gap-1.5 text-[10px] text-gray-500 sm:mt-4 sm:gap-2 sm:text-xs">
                       {product.profiles?.avatar_url ? <img src={product.profiles.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" /> : <User className="h-5 w-5" />}
-                      <span className="truncate">{product.profiles?.full_name || 'Kabarak seller'}</span>
+                      <UserName
+                        name={product.profiles?.full_name || 'Kabarak seller'}
+                        badges={product.profiles?.user_badges}
+                        className="min-w-0 truncate"
+                        nameClassName="truncate"
+                      />
                       {product.location && <span className="truncate">• {product.location}</span>}
                     </div>
                     <a href={whatsappUrl || '#'} onClick={(event) => { if (!whatsappUrl) { event.preventDefault(); } }} target="_blank" rel="noreferrer" className={`mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-[11px] font-semibold transition sm:mt-5 sm:gap-2 sm:py-3 sm:text-sm ${whatsappUrl ? 'bg-[#16A34A] text-white hover:bg-[#15803D]' : 'cursor-not-allowed bg-gray-100 text-gray-400'}`}>
@@ -237,7 +254,7 @@ export default function MarketPage() {
                 <div className="flex items-start justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-wider text-[#0047B3]">{selectedProduct.category}</p><h2 id="product-detail-title" className="mt-2 text-2xl font-bold text-[#001533] lg:text-3xl">{selectedProduct.title}</h2></div><p className="shrink-0 text-xl font-bold text-[#0047B3]">KSh {Number(selectedProduct.price).toLocaleString()}</p></div>
                 <div className="mt-5 flex flex-wrap gap-2"><span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">{selectedProduct.condition}</span>{selectedProduct.location && <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">{selectedProduct.location}</span>}</div>
                 <p className="mt-6 whitespace-pre-wrap leading-relaxed text-gray-600">{selectedProduct.description}</p>
-                <div className="mt-6 flex items-center gap-3 border-t pt-5 text-sm text-gray-600">{selectedProduct.profiles?.avatar_url ? <img src={selectedProduct.profiles.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" /> : <User className="h-8 w-8" />}<span>Listed by <strong className="text-[#001533]">{selectedProduct.profiles?.full_name || 'Kabarak seller'}</strong></span></div>
+                <div className="mt-6 flex items-center gap-3 border-t pt-5 text-sm text-gray-600">{selectedProduct.profiles?.avatar_url ? <img src={selectedProduct.profiles.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" /> : <User className="h-8 w-8" />}<span className="inline-flex flex-wrap items-center gap-1">Listed by <UserName name={selectedProduct.profiles?.full_name || 'Kabarak seller'} badges={selectedProduct.profiles?.user_badges} nameClassName="font-semibold text-[#001533]" /></span></div>
                 {getWhatsAppUrl(selectedProduct) ? <a href={getWhatsAppUrl(selectedProduct) || '#'} target="_blank" rel="noreferrer" className="mt-auto flex items-center justify-center gap-2 rounded-xl bg-[#16A34A] py-3.5 font-semibold text-white hover:bg-[#15803D]"><MessageCircle className="h-5 w-5" /> Buy on WhatsApp</a> : <p className="mt-auto rounded-xl bg-gray-100 py-3.5 text-center text-sm text-gray-400">Seller contact unavailable</p>}
               </div>
             </div>

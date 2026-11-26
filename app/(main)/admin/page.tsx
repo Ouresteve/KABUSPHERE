@@ -21,7 +21,17 @@ type ClubApplication = {
   created_at: string;
   campuses: { name: string }[] | null;
 };
-type ClubOption = { id: string; name: string };
+type ClubOption = { id: string; name: string; status: 'active' | 'suspended' };
+type CampusOption = { id: string; name: string };
+type SchoolOption = { id: string; campus_id: string; name: string };
+type SchoolBadge = {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  campus_schools: { name: string }[];
+  campuses: { name: string }[];
+};
 type ClubRole = 'club_admin' | 'membership_manager' | 'event_manager' | 'member';
 type CampusUser = {
   user_id: string;
@@ -29,6 +39,8 @@ type CampusUser = {
   email: string;
   membership_role: ClubRole | null;
   membership_status: 'pending' | 'active' | 'rejected' | 'left' | null;
+  verified_school_id: string | null;
+  verified_school_name: string | null;
 };
 
 const clubRoles: { value: ClubRole; label: string }[] = [
@@ -49,11 +61,21 @@ export default function AdminPage() {
   const [applicationsError, setApplicationsError] = useState('');
   const [reviewingApplicationId, setReviewingApplicationId] = useState('');
   const [clubs, setClubs] = useState<ClubOption[]>([]);
+  const [allClubs, setAllClubs] = useState<ClubOption[]>([]);
+  const [campuses, setCampuses] = useState<CampusOption[]>([]);
+  const [schools, setSchools] = useState<SchoolOption[]>([]);
+  const [schoolBadges, setSchoolBadges] = useState<SchoolBadge[]>([]);
+  const [selectedCampusId, setSelectedCampusId] = useState('');
+  const [schoolBadgeError, setSchoolBadgeError] = useState('');
+  const [schoolBadgeNotice, setSchoolBadgeNotice] = useState('');
+  const [creatingSchoolBadge, setCreatingSchoolBadge] = useState(false);
+  const [clubStatusBusy, setClubStatusBusy] = useState('');
   const [selectedClubId, setSelectedClubId] = useState('');
   const [userSearch, setUserSearch] = useState('');
   const [userSearchCompleted, setUserSearchCompleted] = useState(false);
   const [campusUsers, setCampusUsers] = useState<CampusUser[]>([]);
   const [roleDrafts, setRoleDrafts] = useState<Record<string, ClubRole>>({});
+  const [schoolDrafts, setSchoolDrafts] = useState<Record<string, string>>({});
   const [searchingUsers, setSearchingUsers] = useState(false);
   const [assigningUserId, setAssigningUserId] = useState('');
   const [roleManagementError, setRoleManagementError] = useState('');
@@ -73,21 +95,35 @@ export default function AdminPage() {
         return;
       }
       const onlineSince = new Date(Date.now() - 60 * 1000).toISOString();
-      const [users, online, listings, activeListings, onlineAccountsResult, applicationsResult, clubsResult] = await Promise.all([
+      const [users, online, listings, activeListings, onlineAccountsResult, applicationsResult, clubsResult, campusesResult, schoolsResult, schoolBadgesResult] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }).neq('role', 'admin'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).neq('role', 'admin').gte('last_seen_at', onlineSince),
         supabase.from('products').select('id', { count: 'exact', head: true }),
         supabase.from('products').select('id', { count: 'exact', head: true }).eq('status', 'Active'),
         supabase.rpc('get_online_admin_accounts'),
         supabase.from('organization_applications').select('id, name, logo_url, category, description, applicant_name, applicant_email, authority_confirmed, created_at, campuses(name)').eq('status', 'pending').order('created_at', { ascending: true }),
-        supabase.from('organizations').select('id, name').eq('status', 'active').order('name'),
+        supabase.from('organizations').select('id, name, status').order('name'),
+        supabase.from('campuses').select('id, name').order('name'),
+        supabase.from('campus_schools').select('id, campus_id, name').order('name'),
+        supabase.from('organization_badges').select('id, name, description, color, campus_schools(name), campuses(name)').eq('kind', 'school').eq('is_active', true).order('name'),
       ]);
       if (users.error || online.error || listings.error || activeListings.error || onlineAccountsResult.error) setError('Some dashboard metrics could not be loaded. Run the admin online-accounts SQL setup if the account list is unavailable.');
       if (applicationsResult.error) setApplicationsError(applicationsResult.error.message);
       if (clubsResult.error) setRoleManagementError(clubsResult.error.message);
-      const activeClubs = (clubsResult.data || []) as ClubOption[];
+      const clubsData = (clubsResult.data || []) as ClubOption[];
+      const activeClubs = clubsData.filter((club) => club.status === 'active');
+      setAllClubs(clubsData);
       setClubs(activeClubs);
       if (activeClubs.length > 0) setSelectedClubId(activeClubs[0].id);
+      const campusData = (campusesResult.data || []) as CampusOption[];
+      setCampuses(campusData);
+      if (campusData.length > 0) setSelectedCampusId(campusData[0].id);
+      setSchools((schoolsResult.data || []) as SchoolOption[]);
+      if (schoolsResult.error || schoolBadgesResult.error) {
+        setSchoolBadgeError(schoolsResult.error?.message || schoolBadgesResult.error?.message || 'Could not load school badge settings.');
+      } else {
+        setSchoolBadges((schoolBadgesResult.data || []) as SchoolBadge[]);
+      }
       setOnlineAccounts((onlineAccountsResult.data || []) as OnlineAccount[]);
       setClubApplications((applicationsResult.data || []) as ClubApplication[]);
       setStats({ totalUsers: users.count || 0, onlineUsers: online.count || 0, totalListings: listings.count || 0, activeListings: activeListings.count || 0 });
@@ -133,7 +169,7 @@ export default function AdminPage() {
     setCampusUsers([]);
     const { data, error: searchError } = await supabase.rpc('search_campus_users', {
       p_search: query,
-      p_organization_id: organizationId,
+      p_organization_id: organizationId || null,
     });
     setSearchingUsers(false);
     if (searchError) {
@@ -152,16 +188,15 @@ export default function AdminPage() {
         ]),
       ),
     );
+    setSchoolDrafts(
+      Object.fromEntries(results.map((account) => [account.user_id, account.verified_school_id || ''])),
+    );
     return true;
   };
 
   const searchUsers = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = userSearch.trim();
-    if (!selectedClubId) {
-      setRoleManagementError('Approve a club before assigning membership roles.');
-      return;
-    }
     if (query.length < 2) {
       setRoleManagementError('Enter at least two characters to search.');
       return;
@@ -169,6 +204,93 @@ export default function AdminPage() {
 
     setRoleManagementNotice('');
     await loadCampusUsers(query, selectedClubId);
+  };
+
+  const createSchoolBadge = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    setCreatingSchoolBadge(true);
+    setSchoolBadgeError('');
+    setSchoolBadgeNotice('');
+    const { error: createError } = await supabase.rpc('create_school_badge', {
+      p_campus_id: selectedCampusId,
+      p_school_name: String(formData.get('school_name') || '').trim(),
+      p_name: String(formData.get('badge_name') || '').trim(),
+      p_description: String(formData.get('badge_description') || '').trim(),
+      p_color: String(formData.get('badge_color') || 'blue'),
+    });
+
+    if (createError) {
+      setSchoolBadgeError(createError.message);
+      setCreatingSchoolBadge(false);
+      return;
+    }
+
+    const [schoolsResult, badgesResult] = await Promise.all([
+      supabase.from('campus_schools').select('id, campus_id, name').order('name'),
+      supabase.from('organization_badges').select('id, name, description, color, campus_schools(name), campuses(name)').eq('kind', 'school').eq('is_active', true).order('name'),
+    ]);
+    if (schoolsResult.error || badgesResult.error) {
+      setSchoolBadgeError(schoolsResult.error?.message || badgesResult.error?.message || 'The badge was created, but the list could not be refreshed.');
+    } else {
+      setSchools((schoolsResult.data || []) as SchoolOption[]);
+      setSchoolBadges((badgesResult.data || []) as SchoolBadge[]);
+      setSchoolBadgeNotice('School badge created. Assign verified school affiliation to eligible users below.');
+      form.reset();
+    }
+    setCreatingSchoolBadge(false);
+  };
+
+  const setUserSchool = async (account: CampusUser, schoolId: string) => {
+    setAssigningUserId(account.user_id);
+    setRoleManagementError('');
+    const { error: schoolError } = await supabase.rpc('set_verified_school', {
+      p_user_id: account.user_id,
+      p_school_id: schoolId || null,
+    });
+    if (schoolError) {
+      setRoleManagementError(schoolError.message);
+      setAssigningUserId('');
+      return;
+    }
+    await loadCampusUsers(userSearch.trim(), selectedClubId);
+    setAssigningUserId('');
+  };
+
+  const setClubStatus = async (club: ClubOption, status: 'active' | 'suspended') => {
+    const confirmation = status === 'suspended'
+      ? `Take down ${club.name}? It will disappear from the directory, while membership and badge records are retained.`
+      : `Reactivate ${club.name}?`;
+    if (!window.confirm(confirmation)) return;
+
+    setClubStatusBusy(club.id);
+    setRoleManagementError('');
+    const { error: statusError } = await supabase.rpc('set_organization_status', {
+      p_organization_id: club.id,
+      p_status: status,
+    });
+    if (statusError) {
+      setRoleManagementError(statusError.message);
+      setClubStatusBusy('');
+      return;
+    }
+
+    const { data, error: refreshError } = await supabase
+      .from('organizations')
+      .select('id, name, status')
+      .order('name');
+    if (refreshError) {
+      setRoleManagementError(refreshError.message);
+    } else {
+      const updatedClubs = (data || []) as ClubOption[];
+      setAllClubs(updatedClubs);
+      setClubs(updatedClubs.filter((item) => item.status === 'active'));
+      if (status === 'suspended' && selectedClubId === club.id) {
+        setSelectedClubId(updatedClubs.find((item) => item.status === 'active')?.id || '');
+      }
+    }
+    setClubStatusBusy('');
   };
 
   const assignClubRole = async (account: CampusUser) => {
@@ -195,12 +317,123 @@ export default function AdminPage() {
     setAssigningUserId('');
   };
 
+  if (loading) {
+    return (
+      <main role="status" aria-live="polite" className="min-h-screen bg-[#F8FAFC] px-4 py-8 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="h-8 w-64 animate-pulse rounded-lg bg-blue-100" />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="h-32 animate-pulse rounded-2xl bg-white shadow-sm" />
+            ))}
+          </div>
+          <div className="mt-8 h-72 animate-pulse rounded-2xl bg-white shadow-sm" />
+          <span className="sr-only">Loading admin console...</span>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-6 lg:px-10 lg:py-10">
       <div className="mx-auto max-w-6xl">
         <header className="flex items-center justify-between"><div><button onClick={() => router.push('/profile')} className="mb-4 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#0047B3]"><ArrowLeft className="h-4 w-4" /> Profile</button><p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#0047B3]"><ShieldCheck className="h-4 w-4" /> Admin console</p><h1 className="mt-2 text-3xl font-bold text-[#001533]">KABUSphere overview</h1></div></header>
         {error && <p className="mt-6 rounded-xl bg-red-50 p-4 text-red-700">{error}</p>}
         {loading ? <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[1, 2, 3, 4].map((item) => <div key={item} className="h-32 animate-pulse rounded-2xl bg-white" />)}</div> : stats && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><StatCard icon={Users} label="Total users" value={stats.totalUsers} /><StatCard icon={Activity} label="Online now" value={stats.onlineUsers} accent /><StatCard icon={Package} label="Total listings" value={stats.totalListings} /><StatCard icon={ShieldCheck} label="Active listings" value={stats.activeListings} /></div>}
+        <section className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
+          <div className="border-b px-6 py-5">
+            <h2 className="text-lg font-bold text-[#001533]">School badges and verified affiliations</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Create a school badge, then verify users&apos; school affiliation from the account search below. Eligible users can choose whether to display their badge.
+            </p>
+          </div>
+          {schoolBadgeError && <p role="alert" className="m-5 rounded-xl bg-red-50 p-4 text-sm text-red-700">{schoolBadgeError}</p>}
+          {schoolBadgeNotice && <p role="status" className="m-5 rounded-xl bg-green-50 p-4 text-sm text-green-800">{schoolBadgeNotice}</p>}
+          {campuses.length === 0 ? (
+            <p className="p-6 text-sm text-gray-500">No campuses are available to configure school badges.</p>
+          ) : (
+            <form onSubmit={createSchoolBadge} className="grid gap-3 p-6 sm:grid-cols-2">
+              <label className="text-sm font-medium text-gray-700">
+                Campus
+                <select
+                  required
+                  value={selectedCampusId}
+                  onChange={(event) => setSelectedCampusId(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-3"
+                >
+                  {campuses.map((campus) => <option key={campus.id} value={campus.id}>{campus.name}</option>)}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-gray-700">
+                School name
+                <input required name="school_name" maxLength={100} minLength={2} placeholder="School of Science, Engineering and Technology" className="mt-2 w-full rounded-xl border border-gray-300 px-3 py-3" />
+              </label>
+              <label className="text-sm font-medium text-gray-700">
+                Badge label
+                <input required name="badge_name" maxLength={40} minLength={2} placeholder="SSET" className="mt-2 w-full rounded-xl border border-gray-300 px-3 py-3" />
+              </label>
+              <label className="text-sm font-medium text-gray-700">
+                Badge color
+                <select name="badge_color" className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-3">
+                  <option value="blue">Blue</option>
+                  <option value="green">Green</option>
+                  <option value="purple">Purple</option>
+                  <option value="amber">Amber</option>
+                  <option value="rose">Rose</option>
+                </select>
+              </label>
+              <label className="text-sm font-medium text-gray-700 sm:col-span-2">
+                Description (optional)
+                <input name="badge_description" maxLength={200} placeholder="A short explanation shown with the badge" className="mt-2 w-full rounded-xl border border-gray-300 px-3 py-3" />
+              </label>
+              <button type="submit" disabled={creatingSchoolBadge} className="rounded-xl bg-[#0047B3] px-5 py-3 text-sm font-semibold text-white hover:bg-[#003B99] disabled:opacity-50 sm:col-span-2 sm:justify-self-start">
+                {creatingSchoolBadge ? 'Creating badge...' : 'Create school badge'}
+              </button>
+            </form>
+          )}
+          {schoolBadges.length > 0 && (
+            <ul className="divide-y border-t px-6">
+              {schoolBadges.map((badge) => (
+                <li key={badge.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+                  <span className="font-semibold text-[#001533]">{badge.name}</span>
+                  <span className="text-gray-500">{badge.campus_schools?.[0]?.name} · {badge.campuses?.[0]?.name}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
+          <div className="border-b px-6 py-5">
+            <h2 className="text-lg font-bold text-[#001533]">Club availability</h2>
+            <p className="mt-1 text-sm text-gray-500">Take a club down without deleting its membership, badge, or review records. You can reactivate it later.</p>
+          </div>
+          {allClubs.length === 0 ? (
+            <p className="p-6 text-sm text-gray-500">No approved clubs yet.</p>
+          ) : (
+            <ul className="divide-y">
+              {allClubs.map((club) => (
+                <li key={club.id} className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-semibold text-[#001533]">{club.name}</p>
+                    <p className={`mt-1 text-xs font-semibold ${club.status === 'active' ? 'text-green-700' : 'text-red-700'}`}>
+                      {club.status === 'active' ? 'Visible in directory' : 'Suspended / taken down'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={clubStatusBusy === club.id}
+                    onClick={() => void setClubStatus(club, club.status === 'active' ? 'suspended' : 'active')}
+                    className={`rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50 ${club.status === 'active' ? 'border border-red-200 text-red-700 hover:bg-red-50' : 'bg-green-700 text-white hover:bg-green-800'}`}
+                  >
+                    {clubStatusBusy === club.id ? 'Saving...' : club.status === 'active' ? 'Take down' : 'Reactivate'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         <section className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
           <div className="border-b px-6 py-5">
             <h2 className="text-lg font-bold text-[#001533]">Club applications</h2>
@@ -285,6 +518,7 @@ export default function AdminPage() {
                     }}
                     className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-3"
                   >
+                    <option value="">All users (school verification only)</option>
                     {clubs.map((club) => <option key={club.id} value={club.id}>{club.name}</option>)}
                   </select>
                 </label>
@@ -327,32 +561,61 @@ export default function AdminPage() {
                               : 'Not yet a member'}
                         </p>
                       </div>
-                      <div className="flex shrink-0 gap-2">
-                        <select
-                          aria-label={`Role for ${account.full_name}`}
-                          value={roleDrafts[account.user_id] || 'member'}
-                          disabled={!!assigningUserId}
-                          onChange={(event) => {
-                            const selectedRole = clubRoles.find((role) => role.value === event.target.value);
-                            if (selectedRole) {
-                              setRoleDrafts((current) => ({
-                                ...current,
-                                [account.user_id]: selectedRole.value,
-                              }));
-                            }
-                          }}
-                          className="min-w-44 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
-                        >
-                          {clubRoles.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}
-                        </select>
-                        <button
-                          type="button"
-                          disabled={!!assigningUserId || searchingUsers}
-                          onClick={() => void assignClubRole(account)}
-                          className="rounded-lg border border-[#0047B3] px-4 py-2 text-sm font-semibold text-[#0047B3] hover:bg-blue-50 disabled:opacity-50"
-                        >
-                          {assigningUserId === account.user_id ? 'Saving...' : 'Assign'}
-                        </button>
+                      <div className="flex flex-col gap-2 sm:items-end">
+                        <div className="flex flex-wrap gap-2">
+                          <select
+                            aria-label={`Verified school for ${account.full_name}`}
+                            value={schoolDrafts[account.user_id] ?? account.verified_school_id ?? ''}
+                            disabled={!!assigningUserId}
+                            onChange={(event) => setSchoolDrafts((current) => ({
+                              ...current,
+                              [account.user_id]: event.target.value,
+                            }))}
+                            className="min-w-44 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
+                          >
+                            <option value="">No verified school</option>
+                            {schools.map((school) => <option key={school.id} value={school.id}>{school.name}</option>)}
+                          </select>
+                          <button
+                            type="button"
+                            disabled={!!assigningUserId || searchingUsers}
+                            onClick={() => void setUserSchool(account, schoolDrafts[account.user_id] ?? account.verified_school_id ?? '')}
+                            className="rounded-lg border border-green-700 px-3 py-2 text-sm font-semibold text-green-800 hover:bg-green-50 disabled:opacity-50"
+                          >
+                            {assigningUserId === account.user_id ? 'Saving...' : 'Verify school'}
+                          </button>
+                        </div>
+                        {selectedClubId ? (
+                          <div className="flex gap-2">
+                            <select
+                              aria-label={`Role for ${account.full_name}`}
+                              value={roleDrafts[account.user_id] || 'member'}
+                              disabled={!!assigningUserId}
+                              onChange={(event) => {
+                                const selectedRole = clubRoles.find((role) => role.value === event.target.value);
+                                if (selectedRole) {
+                                  setRoleDrafts((current) => ({
+                                    ...current,
+                                    [account.user_id]: selectedRole.value,
+                                  }));
+                                }
+                              }}
+                              className="min-w-44 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
+                            >
+                              {clubRoles.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}
+                            </select>
+                            <button
+                              type="button"
+                              disabled={!!assigningUserId || searchingUsers}
+                              onClick={() => void assignClubRole(account)}
+                              className="rounded-lg border border-[#0047B3] px-4 py-2 text-sm font-semibold text-[#0047B3] hover:bg-blue-50 disabled:opacity-50"
+                            >
+                              {assigningUserId === account.user_id ? 'Saving...' : 'Assign role'}
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-500">Choose a club above to assign membership roles.</p>
+                        )}
                       </div>
                     </div>
                   ))}

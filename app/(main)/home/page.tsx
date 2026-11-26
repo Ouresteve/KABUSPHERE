@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { subscribeToPushNotifications } from '@/lib/push-notifications';
 
 import { sendPushNotification } from '@/lib/send-notification';
+import { UserName, type UserBadge } from '@/components/UserName';
 type post_views = {
   id: string;
   user_id: string;
@@ -28,7 +29,7 @@ type Comment = {
   user_id: string;
   content: string;
   created_at: string;
-  profiles?: {full_name?: string; avatar_url?: string | null};
+  profiles?: {full_name?: string; avatar_url?: string | null; user_badges?: UserBadge[]};
 }
 type Post = {
   id: string;
@@ -45,7 +46,7 @@ type Post = {
   is_anonymous: boolean;
   is_official: boolean;
   created_at: string;
-  profiles?:{full_name?:string; avatar_url?: string | null};
+  profiles?:{full_name?:string; avatar_url?: string | null; user_badges?: UserBadge[]};
 }
 
 export default function HomePage() {
@@ -136,7 +137,14 @@ export default function HomePage() {
         .from('posts')
         .select(`
           *,
-          profiles(full_name, avatar_url)
+          profiles(
+            full_name,
+            avatar_url,
+            user_badges!user_badges_user_id_fkey(
+              is_visible,
+              badge:organization_badges!user_badges_badge_id_fkey(id, name, color, kind)
+            )
+          )
         `)
         .order('created_at', { ascending: false });
 
@@ -343,7 +351,14 @@ export default function HomePage() {
       .from('comments')
       .select(`
         *,
-        profiles(full_name, avatar_url)
+        profiles(
+          full_name,
+          avatar_url,
+          user_badges!user_badges_user_id_fkey(
+            is_visible,
+            badge:organization_badges!user_badges_badge_id_fkey(id, name, color, kind)
+          )
+        )
       `)
       .eq('post_id', postId)
       .order('created_at', { ascending: false });
@@ -371,7 +386,14 @@ export default function HomePage() {
         })
         .select(`
           *,
-          profiles(full_name, avatar_url)
+          profiles(
+            full_name,
+            avatar_url,
+            user_badges!user_badges_user_id_fkey(
+              is_visible,
+              badge:organization_badges!user_badges_badge_id_fkey(id, name, color, kind)
+            )
+          )
         `);
 
       if (error) {
@@ -594,7 +616,15 @@ export default function HomePage() {
                       <User className="w-6 h-6 text-gray-600" />
                     </div>
                   )}
-                  <p className="text-[#0047B3] font-bold">{post.post_type === 'confession' ? 'Anonymous' : post.profiles?.full_name}</p>
+                  {post.post_type === 'confession' ? (
+                    <p className="font-bold text-[#0047B3]">Anonymous</p>
+                  ) : (
+                    <UserName
+                      name={post.profiles?.full_name || 'Kabarak student'}
+                      badges={post.profiles?.user_badges}
+                      nameClassName="font-bold text-[#0047B3]"
+                    />
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-gray-500">
@@ -739,9 +769,11 @@ export default function HomePage() {
                     )}
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="font-semibold text-[#001533] text-sm">
-                          {comment.profiles?.full_name}
-                        </p>
+                        <UserName
+                          name={comment.profiles?.full_name || 'Kabarak student'}
+                          badges={comment.profiles?.user_badges}
+                          nameClassName="text-sm font-semibold text-[#001533]"
+                        />
                         {user?.id === comment.user_id && (
                           <button
                             onClick={() => handleDeleteComment(comment.id, selectedPostId)}
