@@ -18,8 +18,8 @@ create table if not exists public.club_announcements (
 -- ============================================================
 alter table public.club_announcements enable row level security;
 
-drop policy if exists 'Active members can read announcements' on public.club_announcements;
-create policy 'Active members can read announcements'
+drop policy if exists "Active members can read announcements" on public.club_announcements;
+create policy "Active members can read announcements"
   on public.club_announcements for select to authenticated
   using (
     public.is_platform_admin()
