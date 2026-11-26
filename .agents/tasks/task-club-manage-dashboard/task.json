@@ -1,0 +1,7 @@
+{
+  "task_id": "task-club-manage-dashboard",
+  "task_description": "Build a per-club management dashboard for KABUSphere: SQL migration for club_events + supporting RPCs, a new /clubs/[slug]/manage page with role-gated tabs (Overview/Members/Events/Badges), and a pruned clubs directory page that removes inline manager panels and adds a 'Manage club' link plus event countdown chips.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

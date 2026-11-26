@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create Supabase migration 20261127000000_club_events.sql with the club_events table, RLS policies, and all supporting RPCs needed by the manage dashboard. This FEAT is purely SQL — no TypeScript changes. FEAT-002 and FEAT-003 depend on these RPCs existing.",
+  "status": "completed",
+  "steps": [
+    "Create file f:\\Desktop\\KABU CONNECT\\kabu-sphere\\supabase\\migrations\\20261127000000_club_events.sql",
+
+    "Define table public.club_events: id uuid pk default gen_random_uuid(), organization_id uuid not null references public.organizations(id) on delete cascade, title text not null check (length(trim(title)) between 2 and 120), description text not null default '' check (length(description) <= 500), location text not null default '' check (length(location) <= 120), event_date timestamptz not null, is_cancelled boolean not null default false, created_by uuid references auth.users(id) on delete set null, created_at timestamptz not null default now(). Add index on (organization_id, event_date).",
+
+    "Enable RLS on public.club_events. Add policy 'Non-cancelled events readable' for select to authenticated: using (not is_cancelled). No direct insert/update/delete policies — all mutations go through security-definer RPCs.",
+
+    "Write security-definer RPC upsert_club_event(p_organization_id uuid, p_event_id uuid, p_title text, p_description text, p_location text, p_event_date timestamptz) returns uuid. Logic: 1) check caller has role event_manager OR club_admin in that org (active status); raise 42501 if not. 2) validate title length 2-120, description <=500, location <=120, p_event_date not null. 3) if p_event_id is null: insert new row, return new id. 4) else: update existing row where id=p_event_id and organization_id=p_organization_id and is_cancelled=false, return p_event_id. Grant execute to authenticated. Revoke from public.",
+
+    "Write security-definer RPC cancel_club_event(p_organization_id uuid, p_event_id uuid) returns void. Logic: 1) check caller has event_manager OR club_admin role (active). 2) set is_cancelled=true where id=p_event_id and organization_id=p_organization_id. 3) raise P0002 if not found. Grant execute to authenticated. Revoke from public.",
+
+    "Write security-definer RPC get_club_events(p_organization_id uuid) returns table(id uuid, title text, description text, location text, event_date timestamptz, is_cancelled boolean, created_at timestamptz) ordered by event_date asc. No role check — any authenticated user can read. Grant execute to authenticated. Revoke from public.",
+
+    "Write security-definer RPC get_club_manage_data(p_slug text) returns json. Logic: 1) look up org by slug where status='active'; raise P0002 if not found. 2) check caller has active role in ('club_admin','membership_manager','event_manager') for that org; raise 42501 with message 'You do not manage this club' if not (unless is_platform_admin()). 3) Build and return a single JSON object with keys: club (id, name, slug, category, description, logo_url), caller_role (the role string), pending_requests (array: user_id, full_name, requested_at, badges jsonb — reuse the same join pattern as get_organization_join_requests), active_members (array: user_id, full_name, role), club_badges (array: id, name, description, color). Grant execute to authenticated. Revoke from public.",
+
+    "Write security-definer RPC remove_club_member(p_organization_id uuid, p_user_id uuid) returns void. Logic: 1) check caller has active club_admin OR membership_manager role for that org. 2) update organization_memberships set status='left' where organization_id=p_organization_id and user_id=p_user_id and status='active'. 3) raise P0002 if not found. Grant execute to authenticated. Revoke from public."
+  ],
+  "acceptance_criteria": [
+    "File f:\\Desktop\\KABU CONNECT\\kabu-sphere\\supabase\\migrations\\20261127000000_club_events.sql exists and is valid SQL (no syntax errors visually verifiable)",
+    "Table definition includes all required columns with correct types, checks, and FK constraints",
+    "All six RPCs are present: upsert_club_event, cancel_club_event, get_club_events, get_club_manage_data, remove_club_member",
+    "Each RPC has 'security definer', 'set search_path = ''''', revoke from public, grant to authenticated",
+    "RLS is enabled on club_events with a select policy for authenticated users"
+  ],
+  "verification": [
+    "npm run build (from f:\\Desktop\\KABU CONNECT\\kabu-sphere) — must exit 0. This FEAT has no TypeScript changes so the build test mainly confirms no pre-existing breakage."
+  ],
+  "blocked_reason": null,
+  "findings": "Migration 20261127000000_club_events.sql created and build passes (exit 0). Five RPCs available: upsert_club_event, cancel_club_event, get_club_events, get_club_manage_data, remove_club_member. get_club_manage_data(p_slug text) returns JSON with keys: club, caller_role, pending_requests, active_members, club_badges. FEAT-002 (TypeScript pages/components) should call get_club_manage_data to load dashboard data, upsert_club_event / cancel_club_event for event CRUD, remove_club_member for membership management, and get_club_events(org_id) to list events. All RPCs are granted to authenticated only."
+}

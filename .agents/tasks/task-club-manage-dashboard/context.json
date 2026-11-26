@@ -1,0 +1,24 @@
+{
+  "project_type": "Next.js 16 app-router project (TypeScript strict, Tailwind 4)",
+  "language": "TypeScript (strict, no implicit any)",
+  "build_system": "Next.js 16 / npm. No monorepo. Build: npm run build. Lint: npm run lint. No separate compile step.",
+  "test_framework": "None — verification is npm run build passing with 0 errors",
+  "build_command": "npm run build",
+  "test_command": "npm run build",
+  "verification_instructions": "Run `npm run build` from f:\\Desktop\\KABU CONNECT\\kabu-sphere. Exit code 0 and no TypeScript errors = pass. The dev server is never used for verification.",
+  "snapshot_or_generated_files": "null",
+  "environment_constraints": "Windows (PowerShell). Paths with parentheses like app/(main) must be quoted in shell commands. Never restart or start the dev server as part of verification.",
+  "contribution_requirements": "All DB mutations via security-definer RPCs — no direct table writes from client. TypeScript strict — no 'any' except window event handlers. Match existing colour palette: bg-[#F8FAFC], text-[#001533], bg-[#0047B3], rounded-2xl, shadow-sm.",
+  "key_patterns": "1) Supabase client imported as `import { supabase } from '@/lib/supabase'`. 2) Auth via `import { useAuth } from '@/lib/auth-context'` — hook returns { user, loading, signOut }. 3) RPC calls: `supabase.rpc('rpc_name', { p_param: value })`. 4) All pages in app/(main)/ are 'use client'. 5) Lucide-react for icons. 6) next/image for images. 7) next/navigation for useRouter. 8) Loading skeletons use animate-pulse + bg-blue-50/bg-slate-200. 9) Existing roles in organization_memberships: club_admin, membership_manager, event_manager, member. 10) Existing RPCs used in clubs/page.tsx: get_public_club_member_counts, get_organization_join_requests, review_organization_join_request, update_organization_details, create_club_badge, search_organization_members, set_club_member_badge. 11) The is_organization_manager() helper checks club_admin OR membership_manager. 12) is_platform_admin() checks profiles.role = 'admin'.",
+  "relevant_files": [
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\app\\(main)\\clubs\\page.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\components\\ClubBadgeManager.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\components\\UserName.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\supabase\\migrations\\20261126120000_club_management_badges.sql",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\lib\\supabase.ts",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\lib\\auth-context.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\app\\(main)\\layout.tsx",
+    "f:\\Desktop\\KABU CONNECT\\kabu-sphere\\app\\(main)\\admin\\page.tsx"
+  ],
+  "directory_structure": "app/(main)/ — all user-facing pages (clubs/page.tsx, admin/page.tsx, home, market, profile). components/ — shared components (ClubBadgeManager.tsx, UserName.tsx). lib/ — supabase.ts, auth-context.tsx. supabase/migrations/ — ordered SQL migration files. public/ — static assets. types/ — shared TS types (if any)."
+}
