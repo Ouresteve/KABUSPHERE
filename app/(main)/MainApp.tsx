@@ -10,6 +10,8 @@ import ProfilePage from './profile/page';
 import CreatePostPage from './create/page';
 import OnboardingPage from './onboarding/page';
 import ClubsPage from './clubs/page';
+import ClubPortalPage from './clubs/[slug]/page';
+import ClubManagePage from './clubs/[slug]/manage/page';
 import AdminPage from './admin/page';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
@@ -97,8 +99,17 @@ export default function MainApp() {
         //setActiveTab('market');
         return <HomePage />;
     }
+    // match most-specific club routes first
+    const clubSlugManage = pathname.match(/\/clubs\/([^/]+)\/manage/);
+    if (clubSlugManage) {
+      return <ClubManagePage params={{ slug: clubSlugManage[1] }} />;
+    }
+    const clubSlug = pathname.match(/\/clubs\/([^/]+)/);
+    if (clubSlug) {
+      return <ClubPortalPage params={{ slug: clubSlug[1] }} />;
+    }
     if (pathname.includes('/clubs')) {
-         return <ClubsPage />;
+      return <ClubsPage />;
     }
     if (pathname.includes('/profile')) return <ProfilePage />;
     return <MarketPage/>;
