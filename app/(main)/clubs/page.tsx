@@ -455,7 +455,7 @@ export default function ClubsPage() {
                   value={clubName}
                   onChange={(event) => setClubName(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 text-base text-[#001533] outline-none focus:border-[#0047B3]"
-                  placeholder="e.g. Presidential Award"
+                  placeholder="e.g. President's Award"
                 />
               </label>
               <label className="text-sm font-medium text-gray-700">
