@@ -1,0 +1,43 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Create app/(main)/clubs/[slug]/manage/page.tsx — the per-club management dashboard. Depends on FEAT-001 (get_club_manage_data, upsert_club_event, cancel_club_event, remove_club_member RPCs). FEAT-003 (clubs directory update) is independent of this FEAT's internals but links to its route.",
+  "status": "completed",
+  "steps": [
+    "Create directory f:\\Desktop\\KABU CONNECT\\kabu-sphere\\app\\(main)\\clubs\\[slug]\\manage\\ (Next.js dynamic-segment route).",
+
+    "Create f:\\Desktop\\KABU CONNECT\\kabu-sphere\\app\\(main)\\clubs\\[slug]\\manage\\page.tsx as a 'use client' component. It receives params: { slug: string } via the Next.js page props pattern: `export default function ClubManagePage({ params }: { params: { slug: string } })`.",
+
+    "On mount, call supabase.rpc('get_club_manage_data', { p_slug: params.slug }). Store the returned JSON in state typed as ManageData (define the type inline). If the RPC returns a 42501 error, show an error card: 'You do not have permission to manage this club.' with a back button to /clubs. If P0002 / not found, show 'Club not found'. While loading show a full-page skeleton (animate-pulse, 3 rectangle placeholders).",
+
+    "Define local TypeScript types (no 'any'): ManageData { club: ClubInfo; caller_role: ClubRole; pending_requests: JoinRequest[]; active_members: ActiveMember[]; club_badges: ClubBadge[] }. ClubRole = 'club_admin' | 'membership_manager' | 'event_manager'. ClubInfo { id: string; name: string; slug: string; category: string; description: string; logo_url: string | null }. JoinRequest { user_id: string; full_name: string; requested_at: string; badges: UserBadge[] } (import UserBadge from @/components/UserName). ActiveMember { user_id: string; full_name: string; role: ClubRole }. ClubBadge { id: string; name: string; description: string; color: string }. ClubEvent { id: string; title: string; description: string; location: string; event_date: string; is_cancelled: boolean; created_at: string }.",
+
+    "Determine visible tabs from caller_role: 'Overview' and 'Badges' — only if club_admin. 'Members' — if club_admin or membership_manager. 'Events' — if club_admin or event_manager. Build a tabs array from these conditions and default-select the first available tab. Render tab buttons in a horizontal scrollable row using the same styling as the club card header: bg-[#0047B3] text-white for active, border border-gray-200 text-[#001533] for inactive, rounded-xl px-4 py-2 text-sm font-semibold.",
+
+    "Page header: sticky top-0 z-40 border-b bg-white px-4 py-4. Left: back button (ArrowLeft icon, 'Clubs' label, onClick: router.push('/clubs')). Centre: club logo (next/image, 40x40, rounded-lg) + club name + category pill. Right: role badge (small rounded-full chip showing caller_role with friendly label: club_admin → 'Club admin', membership_manager → 'Membership manager', event_manager → 'Event manager').",
+
+    "Overview tab (club_admin only): Render an editable form pre-filled from manage_data.club. Fields: name (input, 2-100), category (select, same categories array as clubs/page.tsx), description (textarea, 10-1000), logo_url replacement (file input). On submit call supabase.rpc('update_organization_details', { p_organization_id, p_name, p_category, p_description, p_logo_url }). Cloudinary upload logic: copy the uploadClubLogo function from clubs/page.tsx verbatim (same validation: PNG/JPEG/WebP, ≤5 MB, Cloudinary URL prefix check). Show success/error notices inline. Below the form render a stats strip: member count (from active_members.length), pending requests count, club badges count — three rounded-2xl bg-white shadow-sm cards with a number and label.",
+
+    "Members tab (club_admin or membership_manager): Two sections. Section 1 'Pending requests': render each pending_request with UserName component (import from @/components/UserName, pass name and badges props), requested_at timestamp, Approve (Check icon, green) and Decline (X icon, red) buttons. On click call supabase.rpc('review_organization_join_request', { p_organization_id, p_user_id, p_approved }), then refresh by re-calling get_club_manage_data. Section 2 'Active members': table/list of active_members showing full_name, role chip, and a 'Remove' button (club_admin only — hide for membership_manager). Remove calls supabase.rpc('remove_club_member', { p_organization_id, p_user_id }) then refreshes.",
+
+    "Events tab (club_admin or event_manager): 1) Countdown widget at the top: on tab activation call supabase.rpc('get_club_events', { p_organization_id: manage_data.club.id }) and store results as ClubEvent[]. Find the nearest future non-cancelled event. If found render a countdown card: title, event_date formatted, and a live countdown updating every second via setInterval showing days/hours/minutes/seconds remaining. Use useEffect + useState for the interval; clear on unmount. If no upcoming event show 'No upcoming events'. 2) Event form: title (input 2-120), description (textarea ≤500), location (input ≤120), event_date (datetime-local input). On submit call upsert_club_event with p_event_id=null to create; on edit set p_event_id to the event's id. After upsert refresh get_club_events. 3) Events list below the form: each event card shows title, location, formatted date, description preview. 'Edit' button populates the form above (set editing state). 'Cancel event' button calls cancel_club_event then refreshes. Mark cancelled events visually (line-through, opacity-50).",
+
+    "Badges tab (club_admin only): Import and render <ClubBadgeManager organizationId={manage_data.club.id} badges={manage_data.club_badges} onBadgesChanged={refreshManageData} /> where refreshManageData re-calls get_club_manage_data and updates state.",
+
+    "Global error/notice banners: same pattern as clubs/page.tsx — role='alert' rounded-xl border border-red-200 bg-red-50 for errors, role='status' border border-green-200 bg-green-50 for notices. Busy states: disable action buttons and show inline spinner text (e.g. 'Saving...', 'Approving...'). All Supabase calls are async/await; use a string busyKey state (e.g. `${userId}:approve`) to track which button is busy."
+  ],
+  "acceptance_criteria": [
+    "File f:\\Desktop\\KABU CONNECT\\kabu-sphere\\app\\(main)\\clubs\\[slug]\\manage\\page.tsx exists",
+    "No TypeScript errors — npm run build exits 0",
+    "No 'any' types except window event handlers",
+    "Tab visibility correctly gate-kept: club_admin sees all 4; membership_manager sees Members only; event_manager sees Events only",
+    "All RPC calls use security-definer RPCs from FEAT-001; no direct table mutations",
+    "Back button navigates to /clubs",
+    "ClubBadgeManager rendered on Badges tab with correct organizationId and badges props"
+  ],
+  "verification": [
+    "npm run build (from f:\\Desktop\\KABU CONNECT\\kabu-sphere) — must exit 0 with no TypeScript errors"
+  ],
+  "blocked_reason": null,
+  "findings": "Page created at app/(main)/clubs/[slug]/manage/page.tsx. All types defined inline (no 'any'). Tabs computed from caller_role: club_admin sees all 4; membership_manager sees Members only; event_manager sees Events only. All mutations go through security-definer RPCs: get_club_manage_data, update_organization_details, review_organization_join_request, remove_club_member, upsert_club_event, cancel_club_event, get_club_events. ClubBadgeManager rendered on Badges tab with organizationId and badges props. Cloudinary upload logic copied from clubs/page.tsx. Countdown uses setInterval with cleanup on unmount. npm run build exits 0 with no TypeScript errors. Route appears as /clubs/[slug]/manage (dynamic) in build output."
+}
