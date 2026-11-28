@@ -27,7 +27,10 @@ export default function LandingPage() {
             <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-blue-200"><ShieldCheck className="h-4 w-4" /> Built for Kabarak</p>
             <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-7xl">Your campus. Your people. One place to connect.</h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-blue-100">Join the Kabarak University community on KABUSphere. Share campus updates, discover what is happening, and find useful things from your community.</p>
-            <a href="/login" className="mt-8 inline-flex items-center gap-3 rounded-xl bg-white px-5 py-3.5 font-semibold text-[#001533] hover:bg-blue-50">Join The Sphere <ArrowRight className="h-5 w-5" /></a></div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="/login" className="inline-flex items-center gap-3 rounded-xl bg-white px-5 py-3.5 font-semibold text-[#001533] hover:bg-blue-50">Join The Sphere <ArrowRight className="h-5 w-5" /></a>
+              <a href="/market" className="inline-flex items-center gap-3 rounded-xl border border-white/30 px-5 py-3.5 font-semibold text-white hover:bg-white/10"><Store className="h-5 w-5" /> Browse listings</a>
+            </div></div>
           <div className="grid grid-cols-2 gap-4">{products.slice(0, 2).map((product) => <PreviewCard key={product.id} product={product} />)}<div className="flex aspect-square items-center justify-center rounded-3xl bg-[#0055CC] p-8 text-center"><div><Store className="mx-auto h-10 w-10 text-blue-100" /><p className="mt-4 text-2xl font-bold">Buy local.</p><p className="mt-1 text-sm text-blue-100">Sell to your people.</p></div></div></div>
         </div>
       </section>
